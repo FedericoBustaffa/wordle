@@ -12,7 +12,8 @@ strutturazione del programma.
 
 #### Strutture dati
 
-- Lista o mappa degli utenti registrati.
+- Albero degli utenti registrati per mantenere l'ordine di
+  punteggio.
 - Lista degli utenti registrati attualmente online (forse
   no).
 - Vocabolario parole per il gioco.
