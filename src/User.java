@@ -3,11 +3,13 @@ public class User implements Comparable<User> {
 	private String username;
 	private String password;
 	private int score;
+	private boolean online;
 
 	public User(String username, String password) {
 		this.username = username;
 		this.password = password;
 		this.score = 0;
+		this.online = false;
 	}
 
 	public User() {
@@ -24,6 +26,10 @@ public class User implements Comparable<User> {
 
 	public int getScore() {
 		return score;
+	}
+
+	public boolean getOnline() {
+		return online;
 	}
 
 	@Override

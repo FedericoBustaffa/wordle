@@ -1,12 +1,13 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Set;
 
 public class RegistrationService extends UnicastRemoteObject implements Registration {
 
-	private Wordle wordle;
+	private Set<User> users;
 
-	public RegistrationService(Wordle wordle) throws RemoteException {
-		this.wordle = wordle;
+	public RegistrationService(Set<User> users) throws RemoteException {
+		this.users = users;
 	}
 
 	@Override
@@ -17,7 +18,7 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 			return "invalid password";
 		}
 
-		if (!wordle.add(new User(username, password))) {
+		if (!users.add(new User(username, password))) {
 			return "username \"" + username + "\" not available";
 		} else {
 			return "successful registration";
