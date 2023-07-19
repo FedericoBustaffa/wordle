@@ -17,12 +17,10 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 			return "invalid password";
 		}
 
-		synchronized (wordle) {
-			if (!wordle.add(new User(username, password))) {
-				return "username \"" + username + "\" not available";
-			} else {
-				return "successful registration";
-			}
+		if (!wordle.add(new User(username, password))) {
+			return "username \"" + username + "\" not available";
+		} else {
+			return "successful registration";
 
 		}
 	}
