@@ -1,3 +1,7 @@
+import java.io.IOException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -16,18 +20,35 @@ public class Client {
 	private Registry registry;
 	private Registration registration_service;
 
+	// TCP
+	private Selector selector;
+	private SocketChannel socket;
+
 	// keyboard input
 	private Scanner input;
 
 	public Client() {
 		try {
+			// user profile
 			user = null;
+
+			// RMI service for registration
 			registry = LocateRegistry.getRegistry(RMI_PORT);
 			registration_service = (Registration) registry.lookup(Registration.SERVICE);
+
+			// TCP
+			socket = SocketChannel.open();
+			socket.configureBlocking(false);
+			selector = Selector.open();
+			socket.register(selector, SelectionKey.OP_CONNECT);
+
+			// keyboard input
 			input = new Scanner(System.in);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
