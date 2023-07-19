@@ -1,5 +1,3 @@
-import java.io.File;
-import java.io.IOException;
 import java.rmi.AccessException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
@@ -8,15 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
-
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import java.util.Set;
 
 public class Server {
 
@@ -28,9 +18,7 @@ public class Server {
 	private static final int RMI_PORT = 2000;
 
 	// Json backup
-	private File backup;
-	private ObjectMapper mapper;
-	private JsonFactory factory;
+	private JsonUser json_user;
 
 	// RMI
 	private Registry registry;
@@ -42,46 +30,21 @@ public class Server {
 			wordle = new Wordle();
 
 			// Json
-			getUsersBackup();
+			json_user = new JsonUser(BACKUP_USERS);
+			Set<User> users = json_user.readArray();
+			if (users == null) {
+				System.out.println("< backup file error");
+				System.exit(1);
+			}
+			for (User u : users) {
+				wordle.add(u);
+			}
 
 			registration_service = new RegistrationService(wordle);
 			registry = LocateRegistry.createRegistry(RMI_PORT);
 			registry.rebind(Registration.SERVICE, registration_service);
 
 		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void getUsersBackup() {
-		try {
-			backup = new File(BACKUP_USERS);
-			mapper = new ObjectMapper();
-			factory = new JsonFactory();
-			if (backup.exists()) {
-				mapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-				JsonParser parser;
-				parser = factory.createParser(backup);
-				parser.setCodec(mapper);
-				if (parser.nextToken() != JsonToken.START_ARRAY) {
-					System.out.println("< users backup file error");
-					System.exit(1);
-				}
-				while (parser.nextToken() == JsonToken.START_OBJECT) {
-					wordle.add(parser.readValueAs(User.class));
-				}
-				parser.close();
-
-				for (User u : wordle.getUsers()) {
-					System.out.println(u.toString());
-				}
-			} else {
-				backup.createNewFile();
-			}
-		} catch (JsonParseException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -94,17 +57,10 @@ public class Server {
 
 	public void shutdown() {
 		try {
-			// creazione file backup json
-			JsonGenerator generator = factory.createGenerator(backup, JsonEncoding.UTF8);
-			generator.setCodec(mapper);
-			generator.useDefaultPrettyPrinter();
-			generator.writeStartArray();
-			for (User u : wordle.getUsers()) {
-				generator.writeObject(u);
-			}
-			generator.writeEndArray();
-			generator.close();
+			// json backup file creation
+			json_user.writeArray(wordle.getUsers());
 
+			// RMI service closure
 			UnicastRemoteObject.unexportObject(registration_service, false);
 			registry.unbind(Registration.SERVICE);
 		} catch (NoSuchObjectException e) {
@@ -114,8 +70,6 @@ public class Server {
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

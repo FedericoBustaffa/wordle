@@ -19,9 +19,9 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 
 		synchronized (wordle) {
 			if (!wordle.add(new User(username, password))) {
-				return "username: " + username + " is already taken";
+				return "username \"" + username + "\" not available";
 			} else {
-				return "user: " + username + " registered";
+				return "successful registration";
 			}
 
 		}

@@ -32,6 +32,29 @@ public class Client {
 		}
 	}
 
+	private void registration() {
+		try {
+			System.out.printf("< username: ");
+			String username = input.nextLine().trim();
+			System.out.printf("< password: ");
+			String password = input.nextLine().trim();
+			System.out.println("< " + registration_service.register(username, password));
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void login() {
+		System.out.printf("< username: ");
+		String username = input.nextLine().trim();
+		System.out.printf("< password: ");
+		String password = input.nextLine().trim();
+	}
+
+	private void logout() {
+
+	}
+
 	public void shell() {
 		String cmd;
 		do {
@@ -41,6 +64,12 @@ public class Client {
 				case "register":
 					registration();
 					break;
+				case "login":
+					login();
+					break;
+				case "logout":
+					logout();
+					break;
 				case "quit":
 					break;
 				default:
@@ -48,18 +77,6 @@ public class Client {
 					break;
 			}
 		} while (!cmd.equals("quit"));
-	}
-
-	private void registration() {
-		try {
-			System.out.printf("< username: ");
-			String username = input.nextLine().trim();
-			System.out.printf("< password: ");
-			String password = input.nextLine().trim();
-			registration_service.register(username, password);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void shutdown() {
