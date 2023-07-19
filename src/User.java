@@ -1,4 +1,4 @@
-public class User {
+public class User implements Comparable<User> {
 
 	private String username;
 	private String password;
@@ -20,6 +20,16 @@ public class User {
 
 	public int getScore() {
 		return score;
+	}
+
+	@Override
+	public int compareTo(User other) {
+		if (score > other.score)
+			return 1;
+		else if (score == other.score)
+			return 0;
+		else
+			return -1;
 	}
 
 }
