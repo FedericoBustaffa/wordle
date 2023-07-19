@@ -20,10 +20,16 @@ public class JsonUser {
     private JsonParser parser;
 
     public JsonUser(String filepath) {
-        file = new File(filepath);
-        factory = new JsonFactory();
-        mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        try {
+            file = new File(filepath);
+            if (!file.exists())
+                file.createNewFile();
+            factory = new JsonFactory();
+            mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void writeArray(Set<User> users) {
@@ -44,19 +50,25 @@ public class JsonUser {
 
     public Set<User> readArray() {
         try {
-            Set<User> objects = new TreeSet<User>();
+            Set<User> users = new TreeSet<User>();
             parser = factory.createParser(file);
             parser.setCodec(mapper);
 
-            if (parser.nextToken() != JsonToken.START_ARRAY)
+            JsonToken token = parser.nextToken();
+            // file presente ma vuoto
+            if (token == JsonToken.VALUE_NULL)
+                return users;
+
+            // file malformato
+            if (token != JsonToken.START_ARRAY)
                 return null;
 
             while (parser.nextToken() == JsonToken.START_OBJECT)
-                objects.add(parser.readValueAs(User.class));
+                users.add(parser.readValueAs(User.class));
 
             parser.close();
 
-            return objects;
+            return users;
         } catch (IOException e) {
             e.printStackTrace();
         }
