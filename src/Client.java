@@ -36,7 +36,7 @@ public class Client {
 		String cmd;
 		do {
 			System.out.printf("> ");
-			cmd = input.nextLine();
+			cmd = input.nextLine().trim();
 			switch (cmd) {
 				case "register":
 					registration();
@@ -53,9 +53,9 @@ public class Client {
 	private void registration() {
 		try {
 			System.out.printf("< username: ");
-			String username = input.nextLine();
+			String username = input.nextLine().trim();
 			System.out.printf("< password: ");
-			String password = input.nextLine();
+			String password = input.nextLine().trim();
 			registration_service.register(username, password);
 		} catch (RemoteException e) {
 			e.printStackTrace();

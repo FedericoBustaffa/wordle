@@ -10,20 +10,18 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 	}
 
 	@Override
-	public void register(String username, String password) throws RemoteException {
+	public String register(String username, String password) throws RemoteException {
 		if (username == null || username.equals("")) {
-			System.out.println("< invalid username");
-			return;
+			return "invalid username";
 		} else if (password == null || password.equals("")) {
-			System.out.println("invalid password");
-			return;
+			return "invalid password";
 		}
 
 		synchronized (wordle) {
 			if (!wordle.add(new User(username, password))) {
-				System.out.println("< username: " + username + " is already taken");
+				return "username: " + username + " is already taken";
 			} else {
-				System.out.println("< user " + username + " registered");
+				return "user: " + username + " registered";
 			}
 
 		}

@@ -10,6 +10,10 @@ public class User implements Comparable<User> {
 		this.score = 0;
 	}
 
+	public User() {
+		this(null, null);
+	}
+
 	public String getUsername() {
 		return username;
 	}
@@ -23,13 +27,36 @@ public class User implements Comparable<User> {
 	}
 
 	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("username: " + username + "\n");
+		builder.append("score: " + score);
+
+		return builder.toString();
+	}
+
+	@Override
 	public int compareTo(User other) {
+		if (username.equals(other.username))
+			return 0;
+
 		if (score > other.score)
 			return 1;
 		else if (score == other.score)
-			return 0;
+			return username.compareTo(other.username);
 		else
 			return -1;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		} else if (!(o instanceof User)) {
+			return false;
+		}
+		User other = (User) o;
+		return username.equals(other.username);
 	}
 
 }
