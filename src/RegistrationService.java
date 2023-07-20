@@ -13,15 +13,15 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 	@Override
 	public String register(String username, String password) throws RemoteException {
 		if (username == null || username.equals("")) {
-			return "invalid username";
+			return "< invalid username";
 		} else if (password == null || password.equals("")) {
-			return "invalid password";
+			return "< invalid password";
 		}
 
 		if (!users.add(new User(username, password))) {
-			return "username \"" + username + "\" not available";
+			return "< username \"" + username + "\" not available";
 		} else {
-			return "successful registration";
+			return "< successful registration";
 
 		}
 	}

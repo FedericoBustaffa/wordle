@@ -28,8 +28,16 @@ public class User implements Comparable<User> {
 		return score;
 	}
 
-	public boolean getOnline() {
+	public boolean isOnline() {
 		return online;
+	}
+
+	public void online() {
+		online = true;
+	}
+
+	public void offline() {
+		online = false;
 	}
 
 	@Override

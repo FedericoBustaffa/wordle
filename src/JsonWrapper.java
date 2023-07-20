@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class JsonUser {
+public class JsonWrapper {
 
     private File file;
     private JsonFactory factory;
@@ -19,7 +19,7 @@ public class JsonUser {
     private JsonGenerator generator;
     private JsonParser parser;
 
-    public JsonUser(String filepath) {
+    public JsonWrapper(String filepath) {
         try {
             file = new File(filepath);
             if (!file.exists())

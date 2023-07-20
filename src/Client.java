@@ -76,7 +76,9 @@ public class Client {
 
 	public String receive() {
 		try {
-			return is.readUTF();
+			byte[] buffer = new byte[512];
+			int b = is.read(buffer);
+			return new String(buffer, 0, b);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
