@@ -87,7 +87,7 @@ public class Server {
 				if (password.equals(u.getPassword())) {
 					if (!u.isOnline()) {
 						u.online();
-						stream.writeUser(u);
+						stream.write("< login success " + username);
 					} else {
 						stream.write("< ERROR: already logged in");
 					}
@@ -97,14 +97,12 @@ public class Server {
 				return;
 			}
 		}
-		stream.write("< ERROR: user not registered");
-		System.out.println("< login success");
+		stream.write("< ERROR: user " + username + " not registered");
 	}
 
-	private void logout(String[] cmd, ByteBuffer buffer) {
-		buffer.clear();
+	private void logout(String[] cmd, ByteStream stream) {
 		if (cmd.length != 2) {
-			buffer.put("< ERROR USAGE: logout".getBytes());
+			stream.write("< ERROR USAGE: logout");
 			return;
 		}
 
@@ -113,36 +111,35 @@ public class Server {
 			if (username.equals(u.getUsername())) {
 				if (u.isOnline()) {
 					u.offline();
-					buffer.put("< logout success".getBytes());
+					stream.write("< logout success");
 				} else {
-					buffer.put("< ERROR: not logged in yet".getBytes());
+					stream.write("< ERROR: not logged in yet");
 				}
 				return;
 			}
 		}
-		buffer.put(("< ERROR: username " + username + " not present").getBytes());
+		stream.write("< ERROR: user " + username + " not present");
 	}
 
-	private void exit(String[] cmd, ByteBuffer buffer) {
-		buffer.clear();
+	private void exit(String[] cmd, ByteStream stream) {
 		if (cmd.length == 1) {
-			buffer.put("< exit success".getBytes());
+			stream.write("< exit success");
 		} else if (cmd.length == 2) {
 			String username = cmd[1];
 			for (User u : users) {
 				if (username.equals(u.getUsername())) {
 					if (u.isOnline()) {
 						u.offline();
-						buffer.put("< exit success".getBytes());
+						stream.write("< exit success");
 					} else {
-						buffer.put("< ERROR: not logged in yet".getBytes());
+						stream.write("< ERROR: not logged in yet");
 					}
 					return;
 				}
 			}
-			buffer.put(("< ERROR: username " + username + " not present").getBytes());
+			stream.write("< ERROR: username " + username + " not present");
 		} else {
-			buffer.put("< ERROR USAGE: exit".getBytes());
+			stream.write("< ERROR USAGE: exit");
 		}
 	}
 
@@ -150,23 +147,24 @@ public class Server {
 		try {
 			SocketChannel socket = (SocketChannel) key.channel();
 			ByteStream stream = (ByteStream) key.attachment();
-			String[] cmd = stream.read().split(" ");
+			ByteBuffer buffer = ByteBuffer.allocate(512);
+			buffer.clear();
+			int b = socket.read(buffer);
+			String[] cmd = new String(buffer.array(), 0, b).split(" ");
 			String first = cmd[0].trim();
-			System.out.println("< " + first);
+			// System.out.println("< " + first);
 			if (first.equals("login"))
 				login(cmd, stream);
-			/*
-			 * else if (first.equals("logout"))
-			 * logout(cmd, buffer);
-			 * else if (first.equals("exit")) {
-			 * exit(cmd, buffer);
-			 * ACTIVE_CONNECTIONS--;
-			 * key.cancel();
-			 * socket.close();
-			 * return;
-			 * }
-			 */else
-				System.out.println("< invalid command");
+			else if (first.equals("logout"))
+				logout(cmd, stream);
+			else if (first.equals("exit")) {
+				exit(cmd, stream);
+				ACTIVE_CONNECTIONS--;
+				stream.close();
+				key.cancel();
+				socket.close();
+				return;
+			}
 			socket.register(selector, SelectionKey.OP_WRITE, stream);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -178,7 +176,6 @@ public class Server {
 			SocketChannel socket = (SocketChannel) key.channel();
 			ByteStream stream = (ByteStream) key.attachment();
 			ByteBuffer buffer = ByteBuffer.wrap(stream.getBytes());
-			buffer.flip();
 			while (buffer.hasRemaining())
 				socket.write(buffer);
 			socket.register(selector, SelectionKey.OP_READ, stream);
@@ -197,13 +194,13 @@ public class Server {
 				k = it.next();
 				it.remove();
 				if (k.isAcceptable()) {
-					System.out.println("< ACCEPT");
+					// System.out.println("< ACCEPT");
 					accept(k);
 				} else if (k.isReadable()) {
-					System.out.println("< READ");
+					// System.out.println("< READ");
 					receive(k);
 				} else if (k.isWritable()) {
-					System.out.println("< WRITE");
+					// System.out.println("< WRITE");
 					send(k);
 				}
 			}
@@ -222,8 +219,9 @@ public class Server {
 			UnicastRemoteObject.unexportObject(registration, false);
 
 			// TCP closure
-			for (SelectionKey k : selector.keys())
+			for (SelectionKey k : selector.keys()) {
 				k.channel().close();
+			}
 			selector.close();
 		} catch (IOException e) {
 			e.printStackTrace();

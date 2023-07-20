@@ -2,50 +2,51 @@ import java.util.Scanner;
 
 public class Player {
 
-	private User user;
+	private String username;
 	private Client client;
 	private boolean done;
 	private Scanner input;
 
 	public Player() {
 		done = false;
-		user = null;
+		username = null;
 		client = new Client();
 		input = new Scanner(System.in);
 	}
 
 	private void login(String cmd) {
-		if (user != null) {
+		if (username != null) {
 			System.out.println("< logout before login");
 			return;
 		}
 
 		client.send(cmd);
-		user = client.receiveUser();
-		if (user == null) {
-			System.out.println("< login error");
+		String response = client.receive();
+		if (response.contains("ERROR")) {
+			System.out.println(response);
 		} else {
 			System.out.println("< logged in");
+			username = response.split(" ")[3];
 		}
 	}
 
 	private void logout(String cmd) {
-		if (user == null) {
+		if (username == null) {
 			System.out.println("< login before logout");
 			return;
 		}
-		client.send(cmd + " " + user.getUsername());
+		client.send(cmd + " " + username);
 		String response = client.receive();
 		System.out.println(response);
 		if (!response.contains("ERROR"))
-			user = null;
+			username = null;
 	}
 
 	private void exit(String cmd) {
-		if (user != null)
-			cmd = cmd + " " + user.getUsername();
+		if (username != null)
+			cmd = cmd + " " + username;
 		client.send(cmd);
-		user = null;
+		username = null;
 		done = true;
 	}
 

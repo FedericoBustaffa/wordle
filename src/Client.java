@@ -78,20 +78,12 @@ public class Client {
 		}
 	}
 
-	public void sendUser(User user) {
-
-	}
-
 	public String receive() {
 		try {
 			return reader.readUTF();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
-	}
-
-	public User receiveUser() {
 		return null;
 	}
 
