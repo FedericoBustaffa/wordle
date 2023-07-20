@@ -66,7 +66,7 @@ public class Server {
 			ServerSocketChannel server = (ServerSocketChannel) key.channel();
 			SocketChannel socket = server.accept();
 			socket.configureBlocking(false);
-			socket.register(selector, SelectionKey.OP_READ, ByteBuffer.allocate(512));
+			socket.register(selector, SelectionKey.OP_READ, new ByteStream(1024));
 			ACTIVE_CONNECTIONS++;
 			System.out.println("< new client connected");
 		} catch (IOException e) {
@@ -74,10 +74,9 @@ public class Server {
 		}
 	}
 
-	private void login(String[] cmd, ByteBuffer buffer) {
-		buffer.clear();
+	private void login(String[] cmd, ByteStream stream) {
 		if (cmd.length != 3) {
-			buffer.put("< ERROR USAGE: login <username> <password>\n".getBytes());
+			stream.write("< ERROR USAGE: login <username> <password>");
 			return;
 		}
 
@@ -88,17 +87,17 @@ public class Server {
 				if (password.equals(u.getPassword())) {
 					if (!u.isOnline()) {
 						u.online();
-						buffer.put(("< login success " + username + " " + password).getBytes());
+						stream.writeUser(u);
 					} else {
-						buffer.put("< ERROR: already logged in".getBytes());
+						stream.write("< ERROR: already logged in");
 					}
 				} else {
-					buffer.put("< ERROR: wrong password".getBytes());
+					stream.write("< ERROR: wrong password");
 				}
 				return;
 			}
 		}
-		buffer.put("< ERROR: user not registered".getBytes());
+		stream.write("< ERROR: user not registered");
 		System.out.println("< login success");
 	}
 
@@ -150,26 +149,25 @@ public class Server {
 	private void receive(SelectionKey key) {
 		try {
 			SocketChannel socket = (SocketChannel) key.channel();
-			ByteBuffer buffer = (ByteBuffer) key.attachment();
-			buffer.clear();
-			int b = socket.read(buffer);
-			buffer.flip();
-			String[] cmd = new String(buffer.array(), 0, b).split(" ");
+			ByteStream stream = (ByteStream) key.attachment();
+			String[] cmd = stream.read().split(" ");
 			String first = cmd[0].trim();
 			System.out.println("< " + first);
 			if (first.equals("login"))
-				login(cmd, buffer);
-			else if (first.equals("logout"))
-				logout(cmd, buffer);
-			else if (first.equals("exit")) {
-				exit(cmd, buffer);
-				ACTIVE_CONNECTIONS--;
-				key.cancel();
-				socket.close();
-				return;
-			} else
+				login(cmd, stream);
+			/*
+			 * else if (first.equals("logout"))
+			 * logout(cmd, buffer);
+			 * else if (first.equals("exit")) {
+			 * exit(cmd, buffer);
+			 * ACTIVE_CONNECTIONS--;
+			 * key.cancel();
+			 * socket.close();
+			 * return;
+			 * }
+			 */else
 				System.out.println("< invalid command");
-			socket.register(selector, SelectionKey.OP_WRITE, buffer);
+			socket.register(selector, SelectionKey.OP_WRITE, stream);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -178,11 +176,12 @@ public class Server {
 	private void send(SelectionKey key) {
 		try {
 			SocketChannel socket = (SocketChannel) key.channel();
-			ByteBuffer buffer = (ByteBuffer) key.attachment();
+			ByteStream stream = (ByteStream) key.attachment();
+			ByteBuffer buffer = ByteBuffer.wrap(stream.getBytes());
 			buffer.flip();
 			while (buffer.hasRemaining())
 				socket.write(buffer);
-			socket.register(selector, SelectionKey.OP_READ, buffer);
+			socket.register(selector, SelectionKey.OP_READ, stream);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

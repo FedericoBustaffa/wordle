@@ -21,10 +21,11 @@ public class Player {
 		}
 
 		client.send(cmd);
-		String response = client.receive();
-		System.out.println(response);
-		if (!response.contains("ERROR")) {
-			// user = client.receiveUser();
+		user = client.receiveUser();
+		if (user == null) {
+			System.out.println("< login error");
+		} else {
+			System.out.println("< logged in");
 		}
 	}
 
