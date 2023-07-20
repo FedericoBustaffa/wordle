@@ -77,7 +77,7 @@ public class Server {
 	private void login(String[] cmd, ByteBuffer buffer) {
 		buffer.clear();
 		if (cmd.length != 3) {
-			buffer.put("< ERROR USAGE: login <username> <password>".getBytes());
+			buffer.put("< ERROR USAGE: login <username> <password>\n".getBytes());
 			return;
 		}
 
@@ -164,6 +164,9 @@ public class Server {
 			else if (first.equals("exit")) {
 				exit(cmd, buffer);
 				ACTIVE_CONNECTIONS--;
+				key.cancel();
+				socket.close();
+				return;
 			} else
 				System.out.println("< invalid command");
 			socket.register(selector, SelectionKey.OP_WRITE, buffer);

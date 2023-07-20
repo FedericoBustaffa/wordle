@@ -23,8 +23,10 @@ public class Client {
 	// TCP
 	private SocketAddress tcp_address;
 	private Socket socket;
-	private DataInputStream is;
-	private DataOutputStream os;
+	private DataInputStream reader;
+	private DataOutputStream writer;
+	// private ObjectInputStream object_reader;
+	// private ObjectOutputStream object_writer;
 
 	public Client() {
 		try {
@@ -45,8 +47,10 @@ public class Client {
 	public void connect() {
 		try {
 			socket.connect(tcp_address);
-			is = new DataInputStream(socket.getInputStream());
-			os = new DataOutputStream(socket.getOutputStream());
+			reader = new DataInputStream(socket.getInputStream());
+			writer = new DataOutputStream(socket.getOutputStream());
+			// object_writer = new ObjectOutputStream(socket.getOutputStream());
+			// object_reader = new ObjectInputStream(socket.getInputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -61,28 +65,34 @@ public class Client {
 			return registration.register(parse[1], parse[2]);
 		} catch (RemoteException e) {
 			e.printStackTrace();
-			return null;
 		}
+		return null;
 	}
 
 	public void send(String cmd) {
 		try {
-			os.writeUTF(cmd);
-			os.flush();
+			writer.writeUTF(cmd);
+			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	public void sendUser(User user) {
+
+	}
+
 	public String receive() {
 		try {
-			byte[] buffer = new byte[512];
-			int b = is.read(buffer);
-			return new String(buffer, 0, b);
+			return reader.readUTF();
 		} catch (IOException e) {
 			e.printStackTrace();
-			return null;
 		}
+		return null;
+	}
+
+	public User receiveUser() {
+		return null;
 	}
 
 	public void shutdown() {

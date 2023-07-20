@@ -16,7 +16,7 @@ public class Player {
 
 	private void login(String cmd) {
 		if (user != null) {
-			System.out.println("< logout before login again");
+			System.out.println("< logout before login");
 			return;
 		}
 
@@ -24,9 +24,7 @@ public class Player {
 		String response = client.receive();
 		System.out.println(response);
 		if (!response.contains("ERROR")) {
-			String[] parse = response.split(" ");
-			user = new User(parse[3], parse[4]);
-			user.online();
+			// user = client.receiveUser();
 		}
 	}
 
@@ -37,12 +35,9 @@ public class Player {
 		}
 		client.send(cmd + " " + user.getUsername());
 		String response = client.receive();
-		if (response.contains("ERROR")) {
-			System.out.println(response);
-		} else {
-			System.out.println(response);
+		System.out.println(response);
+		if (!response.contains("ERROR"))
 			user = null;
-		}
 	}
 
 	private void exit(String cmd) {
