@@ -1,5 +1,10 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.channels.Selector;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -16,7 +21,10 @@ public class Client {
 	private Registration registration;
 
 	// TCP
-	private Selector selector;
+	private SocketAddress tcp_address;
+	private Socket socket;
+	private DataInputStream is;
+	private DataOutputStream os;
 
 	public Client() {
 		try {
@@ -25,7 +33,8 @@ public class Client {
 			registration = (Registration) registry.lookup(Registration.SERVICE);
 
 			// TCP
-			selector = Selector.open();
+			tcp_address = new InetSocketAddress(InetAddress.getLocalHost(), TCP_PORT);
+			socket = new Socket();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
@@ -33,28 +42,50 @@ public class Client {
 		}
 	}
 
-	public void register(String[] cmd) {
+	public void connect() {
 		try {
-			if (cmd.length != 3)
-				System.out.println("< USAGE: register <username> <password>");
-
-			System.out.println("< " + registration.register(cmd[1], cmd[2]));
-		} catch (RemoteException e) {
+			socket.connect(tcp_address);
+			is = new DataInputStream(socket.getInputStream());
+			os = new DataOutputStream(socket.getOutputStream());
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void send(String[] cmd) {
+	public String register(String cmd) {
+		try {
+			String[] parse = cmd.split(" ");
+			if (parse.length != 3)
+				return "< ERROR\n< USAGE: register <username> <password>";
 
+			return registration.register(parse[1], parse[2]);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public void send(String cmd) {
+		try {
+			os.writeUTF(cmd);
+			os.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String receive() {
-		return null;
+		try {
+			return is.readUTF();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public void shutdown() {
 		try {
-			selector.close();
+			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
