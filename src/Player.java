@@ -22,19 +22,13 @@ public class Player {
 
 		client.send(cmd);
 		String response = client.receive();
-		if (response.contains("ERROR")) {
-			System.out.println(response);
-		} else {
-			System.out.println("< logged in");
+		System.out.println(response);
+		if (!response.contains("ERROR")) {
 			username = response.split(" ")[3];
 		}
 	}
 
 	private void logout(String cmd) {
-		if (username == null) {
-			System.out.println("< login before logout");
-			return;
-		}
 		client.send(cmd + " " + username);
 		String response = client.receive();
 		System.out.println(response);
@@ -42,12 +36,20 @@ public class Player {
 			username = null;
 	}
 
+	private void play(String cmd) {
+		client.send(cmd + " " + username);
+		String response = client.receive();
+		System.out.println(response);
+	}
+
 	private void exit(String cmd) {
-		if (username != null)
-			cmd = cmd + " " + username;
-		client.send(cmd);
-		username = null;
-		done = true;
+		client.send(cmd + " " + username);
+		String response = client.receive();
+		System.out.println(response);
+		if (!response.contains("ERROR")) {
+			username = null;
+			done = true;
+		}
 	}
 
 	public void shell() {
@@ -62,11 +64,13 @@ public class Player {
 			if (first.equals("register"))
 				System.out.println(client.register(cmd));
 			else if (first.equals("login"))
-				login(cmd);
+				this.login(cmd);
 			else if (first.equals("logout"))
-				logout(cmd);
+				this.logout(cmd);
+			else if (first.equals("play"))
+				this.play(cmd);
 			else if (first.equals("exit"))
-				exit(cmd);
+				this.exit(cmd);
 			else
 				System.out.println("< invalid command");
 		}

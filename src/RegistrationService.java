@@ -21,8 +21,8 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 		if (!users.add(new User(username, password))) {
 			return "< username \"" + username + "\" not available";
 		} else {
+			System.out.println("< new user: " + username + " has been registered");
 			return "< successful registration";
-
 		}
 	}
 }
