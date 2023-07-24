@@ -87,7 +87,6 @@ public class Reader implements Runnable {
 
 		stream.write("< sharing score");
 		try {
-			System.out.println("< " + group);
 			DatagramPacket packet = new DatagramPacket(cmd[1].getBytes(), cmd[1].length(), group);
 			multicast.send(packet);
 		} catch (IOException e) {
@@ -112,7 +111,14 @@ public class Reader implements Runnable {
 				if (u.isOnline()) {
 					u.offline();
 					stream.write("< logged out from " + username);
-					System.out.println("< " + username + " logged out");
+					System.out.println("< " + username + " has left");
+					try {
+						String msg = "leave " + username;
+						DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), group);
+						multicast.send(packet);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				} else {
 					stream.write("< ERROR: not logged in yet");
 				}
@@ -133,19 +139,19 @@ public class Reader implements Runnable {
 					u.offline();
 					stream.write("< exit success");
 					System.out.println("< " + username + " logged out");
+					try {
+						String msg = "leave " + username;
+						DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), group);
+						multicast.send(packet);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 					return;
 				}
 			}
 			stream.write("< ERROR: username " + username + " not present");
 		} else {
 			stream.write("< exit success");
-			try {
-				String msg = "exit " + cmd[1];
-				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), group);
-				multicast.send(packet);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 

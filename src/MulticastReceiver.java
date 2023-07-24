@@ -1,16 +1,22 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.concurrent.BlockingQueue;
 
 public class MulticastReceiver implements Runnable {
 
+	private InetAddress group;
 	private MulticastSocket multicast;
 	private BlockingQueue<String> scores;
+	private String username;
 
-	public MulticastReceiver(MulticastSocket multicast, BlockingQueue<String> scores) {
+	public MulticastReceiver(InetAddress group, MulticastSocket multicast,
+			BlockingQueue<String> scores, String username) {
+		this.group = group;
 		this.multicast = multicast;
 		this.scores = scores;
+		this.username = username;
 	}
 
 	public void run() {
@@ -20,7 +26,13 @@ public class MulticastReceiver implements Runnable {
 			while (true) {
 				multicast.receive(packet);
 				msg = new String(packet.getData(), 0, packet.getLength());
-				System.out.println(msg);
+				if (msg.contains("leave") && msg.contains(username)) {
+					multicast.leaveGroup(group);
+					break;
+				} else if (!msg.contains(username)) {
+					System.out.printf("\n< " + msg + "\n> ");
+					scores.add(msg);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

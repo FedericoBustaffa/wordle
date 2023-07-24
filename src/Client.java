@@ -90,8 +90,6 @@ public class Client {
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
 
 			scores = new LinkedBlockingQueue<String>();
-			multicast_receiver = new Thread(new MulticastReceiver(multicast, scores));
-			multicast_receiver.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
@@ -153,6 +151,8 @@ public class Client {
 			if (!response.contains("ERROR")) {
 				username = response.split(" ")[3];
 				multicast.joinGroup(group);
+				multicast_receiver = new Thread(new MulticastReceiver(group, multicast, scores, username));
+				multicast_receiver.start();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -166,9 +166,9 @@ public class Client {
 			System.out.println(response);
 			if (!response.contains("ERROR")) {
 				username = null;
-				multicast.leaveGroup(group);
+				multicast_receiver.join();
 			}
-		} catch (IOException e) {
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -193,9 +193,10 @@ public class Client {
 			if (!response.contains("ERROR")) {
 				username = null;
 				done = true;
-				multicast.leaveGroup(group);
+				if (multicast_receiver != null)
+					multicast_receiver.join();
 			}
-		} catch (IOException e) {
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -235,13 +236,9 @@ public class Client {
 			socket.close();
 
 			// MULTICAST closure
-			multicast_receiver.join();
-			multicast.leaveGroup(group);
 			multicast.close();
 
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}

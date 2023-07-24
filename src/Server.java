@@ -112,6 +112,8 @@ public class Server {
 			multicast = new MulticastSocket();
 			group = new InetSocketAddress(MULTICAST_ADDRESS, MULTICAST_PORT);
 			// multicast.joinGroup(group, null);
+			System.out.println("< MULTICAST address: " + MULTICAST_ADDRESS);
+			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
 		} catch (
 
 		IOException e) {

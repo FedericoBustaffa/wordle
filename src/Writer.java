@@ -30,6 +30,7 @@ public class Writer implements Runnable {
 			if (msg.contains("exit success")) {
 				stream.close();
 				ACTIVE_CONNECTIONS.decrementAndGet();
+				System.out.println("< client has left");
 				selector.wakeup();
 				return;
 			}
