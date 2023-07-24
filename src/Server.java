@@ -1,6 +1,8 @@
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
 import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -12,6 +14,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,15 +25,17 @@ public class Server {
 
 	// Tree Set of Users
 	private Set<User> users;
-	// private Set<User> playing_users;
+	// private Set<User> playing_users; // giocatori online
 
 	// JSON
 	private JsonWrapper json_wrapper;
 
 	// CONFIGURATION
-	private static final String BACKUP_USERS = "users.json";
-	private static final int RMI_PORT = 1500;
-	private static final int TCP_PORT = 2000;
+	private String BACKUP_USERS;
+	private int RMI_PORT;
+	private int TCP_PORT;
+	private String MULTICAST_ADDRESS;
+	private int MULTICAST_PORT;
 
 	// RMI
 	private Registry registry;
@@ -42,8 +47,40 @@ public class Server {
 	private Selector selector;
 	private ExecutorService pool;
 
+	// MULTICAST
+	private MulticastSocket multicast;
+	private SocketAddress group;
+
 	public Server() {
 		try {
+			// configuration file
+			File config = new File("server_config.txt");
+			if (!config.exists()) {
+				System.out.println("ERROR: server configuration file not found");
+				System.exit(1);
+			}
+
+			Scanner scanner = new Scanner(config);
+			String[] line;
+			while (scanner.hasNext()) {
+				line = scanner.nextLine().split("=");
+				if (line[0].equals("BACKUP_USERS"))
+					BACKUP_USERS = line[1];
+				else if (line[0].equals("RMI_PORT"))
+					RMI_PORT = Integer.parseInt(line[1]);
+				else if (line[0].equals("TCP_PORT"))
+					TCP_PORT = Integer.parseInt(line[1]);
+				else if (line[0].equals("MULTICAST_ADDRESS"))
+					MULTICAST_ADDRESS = line[1];
+				else if (line[0].equals("MULTICAST_PORT"))
+					MULTICAST_PORT = Integer.parseInt(line[1]);
+				else {
+					System.out.println("< ERROR: configuration file corrupted");
+					System.exit(1);
+				}
+			}
+			scanner.close();
+
 			// playing users init
 			// playing_users = Collections.synchronizedSet(new TreeSet<User>());
 
@@ -55,7 +92,7 @@ public class Server {
 			registration = new RegistrationService(users);
 			registry = LocateRegistry.createRegistry(RMI_PORT);
 			registry.rebind(Registration.SERVICE, registration);
-			System.out.println("< RMI service on");
+			System.out.println("< RMI service on port: " + RMI_PORT);
 
 			// TCP
 			ACTIVE_CONNECTIONS = new AtomicInteger(0);
@@ -69,8 +106,15 @@ public class Server {
 			server.register(selector, SelectionKey.OP_ACCEPT);
 
 			pool = Executors.newCachedThreadPool();
-			System.out.println("< TCP connections available");
-		} catch (IOException e) {
+			System.out.println("< TCP connections available on port: " + TCP_PORT);
+
+			// MULTICAST
+			multicast = new MulticastSocket();
+			group = new InetSocketAddress(MULTICAST_ADDRESS, MULTICAST_PORT);
+			// multicast.joinGroup(group, null);
+		} catch (
+
+		IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -107,7 +151,7 @@ public class Server {
 						pool.execute(new Writer(selector, socket, stream, ACTIVE_CONNECTIONS));
 					} else if (key.isReadable()) {
 						key.cancel();
-						pool.execute(new Reader(selector, socket, stream, users));
+						pool.execute(new Reader(selector, socket, stream, multicast, group, users));
 					}
 				}
 			}
@@ -138,6 +182,9 @@ public class Server {
 				k.channel().close();
 			}
 			selector.close();
+
+			// multicast closure
+			multicast.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {

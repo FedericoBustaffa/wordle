@@ -1,31 +1,31 @@
 [ {
+  "username" : "marghi",
+  "password" : "m4rgh1",
+  "score" : 10,
+  "online" : false
+}, {
+  "username" : "chiara",
+  "password" : "ch14r4",
+  "score" : 3,
+  "online" : false
+}, {
+  "username" : "fede",
+  "password" : "f3d3",
+  "score" : 2,
+  "online" : false
+}, {
+  "username" : "betta",
+  "password" : "b3tt4",
+  "score" : 1,
+  "online" : false
+}, {
   "username" : "andrea",
   "password" : "4ndr34",
   "score" : 0,
   "online" : false
 }, {
-  "username" : "betta",
-  "password" : "b3tt4",
-  "score" : 0,
-  "online" : false
-}, {
-  "username" : "chiara",
-  "password" : "ch14r4",
-  "score" : 0,
-  "online" : false
-}, {
   "username" : "ciccio",
   "password" : "c1cc10",
-  "score" : 0,
-  "online" : false
-}, {
-  "username" : "fede",
-  "password" : "f3d3",
-  "score" : 0,
-  "online" : false
-}, {
-  "username" : "marghi",
-  "password" : "m4rgh1",
   "score" : 0,
   "online" : false
 } ]

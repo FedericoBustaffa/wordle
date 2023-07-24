@@ -57,11 +57,11 @@ public class User implements Comparable<User>, Serializable {
 			return 0;
 
 		if (score > other.score)
-			return 1;
+			return -1;
 		else if (score == other.score)
 			return username.compareTo(other.username);
 		else
-			return -1;
+			return 1;
 	}
 
 	@Override

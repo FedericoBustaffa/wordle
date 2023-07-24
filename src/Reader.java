@@ -1,4 +1,7 @@
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.MulticastSocket;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -10,12 +13,19 @@ public class Reader implements Runnable {
 	private Selector selector;
 	private SocketChannel socket;
 	private ByteStream stream;
+
+	private MulticastSocket multicast;
+	private SocketAddress group;
+
 	private Set<User> users;
 
-	public Reader(Selector selector, SocketChannel socket, ByteStream stream, Set<User> users) {
+	public Reader(Selector selector, SocketChannel socket, ByteStream stream,
+			MulticastSocket multicast, SocketAddress group, Set<User> users) {
 		this.selector = selector;
 		this.socket = socket;
 		this.stream = stream;
+		this.multicast = multicast;
+		this.group = group;
 		this.users = users;
 	}
 
@@ -51,6 +61,7 @@ public class Reader implements Runnable {
 			stream.write("< ERROR USAGE: play");
 			return;
 		}
+
 		String username = cmd[1];
 		if (username.equals("null")) {
 			stream.write("< ERROR: login to play");
@@ -59,6 +70,29 @@ public class Reader implements Runnable {
 
 		}
 		stream.write("< play");
+	}
+
+	private void share(String[] cmd) {
+		System.out.println("< share");
+		if (cmd.length != 2) {
+			stream.write("< ERROR USAGE: share");
+			return;
+		}
+
+		String username = cmd[1];
+		if (username.equals("null")) {
+			stream.write("< ERROR: login to share your score");
+			return;
+		}
+
+		stream.write("< sharing score");
+		try {
+			System.out.println("< " + group);
+			DatagramPacket packet = new DatagramPacket(cmd[1].getBytes(), cmd[1].length(), group);
+			multicast.send(packet);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void logout(String[] cmd) {
@@ -105,6 +139,13 @@ public class Reader implements Runnable {
 			stream.write("< ERROR: username " + username + " not present");
 		} else {
 			stream.write("< exit success");
+			try {
+				String msg = "exit " + cmd[1];
+				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), group);
+				multicast.send(packet);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -120,6 +161,8 @@ public class Reader implements Runnable {
 					login(cmd);
 				else if (first.equals("play"))
 					play(cmd);
+				else if (first.equals("share"))
+					share(cmd);
 				else if (first.equals("logout"))
 					logout(cmd);
 				else if (first.equals("exit"))

@@ -1,20 +1,32 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Client {
 
+	// UTILITY
+	private String username; // null if not logged
+	private boolean done;
+	private Scanner input;
+
 	// CONFIGURATION
-	private static final int RMI_PORT = 1500;
-	private static final int TCP_PORT = 2000;
+	private int RMI_PORT = 1500;
+	private int TCP_PORT = 2000;
+	private String MULTICAST_ADDRESS;
+	private int MULTICAST_PORT;
 
 	// RMI
 	private Registry registry;
@@ -25,11 +37,46 @@ public class Client {
 	private Socket socket;
 	private DataInputStream reader;
 	private DataOutputStream writer;
-	// private ObjectInputStream object_reader;
-	// private ObjectOutputStream object_writer;
+
+	// MULTICAST
+	private MulticastSocket multicast;
+	private InetAddress group;
+	private Thread multicast_receiver;
+	private BlockingQueue<String> scores;
 
 	public Client() {
 		try {
+
+			username = null;
+			done = false;
+			input = new Scanner(System.in);
+
+			// Configuration
+			File config = new File("client_config.txt");
+			if (!config.exists()) {
+				System.out.println("ERROR: server configuration file not found");
+				System.exit(1);
+			}
+
+			Scanner scanner = new Scanner(config);
+			String[] line;
+			while (scanner.hasNext()) {
+				line = scanner.nextLine().split("=");
+				if (line[0].equals("RMI_PORT"))
+					RMI_PORT = Integer.parseInt(line[1]);
+				else if (line[0].equals("TCP_PORT"))
+					TCP_PORT = Integer.parseInt(line[1]);
+				else if (line[0].equals("MULTICAST_ADDRESS"))
+					MULTICAST_ADDRESS = line[1];
+				else if (line[0].equals("MULTICAST_PORT"))
+					MULTICAST_PORT = Integer.parseInt(line[1]);
+				else {
+					System.out.println("< ERROR: configuration file corrupted");
+					System.exit(1);
+				}
+			}
+			scanner.close();
+
 			// RMI
 			registry = LocateRegistry.getRegistry(RMI_PORT);
 			registration = (Registration) registry.lookup(Registration.SERVICE);
@@ -37,6 +84,14 @@ public class Client {
 			// TCP
 			tcp_address = new InetSocketAddress(InetAddress.getLocalHost(), TCP_PORT);
 			socket = new Socket();
+
+			// MULTICAST
+			multicast = new MulticastSocket(MULTICAST_PORT);
+			group = InetAddress.getByName(MULTICAST_ADDRESS);
+
+			scores = new LinkedBlockingQueue<String>();
+			multicast_receiver = new Thread(new MulticastReceiver(multicast, scores));
+			multicast_receiver.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
@@ -49,8 +104,6 @@ public class Client {
 			socket.connect(tcp_address);
 			reader = new DataInputStream(socket.getInputStream());
 			writer = new DataOutputStream(socket.getOutputStream());
-			// object_writer = new ObjectOutputStream(socket.getOutputStream());
-			// object_reader = new ObjectInputStream(socket.getInputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -87,12 +140,116 @@ public class Client {
 		return null;
 	}
 
-	public void shutdown() {
+	private void login(String cmd) {
+		if (username != null) {
+			System.out.println("< logout before login");
+			return;
+		}
+
 		try {
-			socket.close();
+			this.send(cmd);
+			String response = this.receive();
+			System.out.println(response);
+			if (!response.contains("ERROR")) {
+				username = response.split(" ")[3];
+				multicast.joinGroup(group);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void logout(String cmd) {
+		try {
+			this.send(cmd + " " + username);
+			String response = this.receive();
+			System.out.println(response);
+			if (!response.contains("ERROR")) {
+				username = null;
+				multicast.leaveGroup(group);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void play(String cmd) {
+		this.send(cmd + " " + username);
+		String response = this.receive();
+		System.out.println(response);
+	}
+
+	private void share(String cmd) {
+		this.send(cmd + " " + username);
+		String response = this.receive();
+		System.out.println(response);
+	}
+
+	private void exit(String cmd) {
+		try {
+			this.send(cmd + " " + username);
+			String response = this.receive();
+			System.out.println(response);
+			if (!response.contains("ERROR")) {
+				username = null;
+				done = true;
+				multicast.leaveGroup(group);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void shell() {
+		this.connect();
+		String cmd;
+		String first;
+		while (!done) {
+			System.out.printf("> ");
+			cmd = input.nextLine().trim();
+			first = cmd.split(" ")[0];
+
+			if (first.equals("register"))
+				System.out.println(this.register(cmd));
+			else if (first.equals("login"))
+				this.login(cmd);
+			else if (first.equals("logout"))
+				this.logout(cmd);
+			else if (first.equals("play"))
+				this.play(cmd);
+			else if (first.equals("share"))
+				this.share(cmd);
+			else if (first.equals("exit"))
+				this.exit(cmd);
+			else
+				System.out.println("< invalid command");
+		}
+	}
+
+	public void shutdown() {
+		try {
+			// Scanner closure
+			input.close();
+
+			// TCP closure
+			socket.close();
+
+			// MULTICAST closure
+			multicast_receiver.join();
+			multicast.leaveGroup(group);
+			multicast.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void main(String[] args) {
+		Client client = new Client();
+		client.shell();
+		client.shutdown();
 	}
 
 }
