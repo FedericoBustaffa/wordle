@@ -7,7 +7,7 @@ public class ByteStream {
 	private ByteArrayOutputStream baos;
 
 	public ByteStream(int size) {
-		baos = new ByteArrayOutputStream();
+		baos = new ByteArrayOutputStream(size);
 	}
 
 	public byte[] getBytes() {

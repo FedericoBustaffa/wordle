@@ -1,19 +1,16 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.List;
 
 public class MulticastReceiver extends Thread {
 
-	private InetAddress group;
 	private MulticastSocket multicast;
 	private List<String> scores;
 	private String username;
 
-	public MulticastReceiver(InetAddress group, MulticastSocket multicast,
+	public MulticastReceiver(MulticastSocket multicast,
 			List<String> scores, String username) {
-		this.group = group;
 		this.multicast = multicast;
 		this.scores = scores;
 		this.username = username;
@@ -28,7 +25,6 @@ public class MulticastReceiver extends Thread {
 				msg = new String(packet.getData(), 0, packet.getLength());
 				if (msg.contains("leave")) {
 					if (msg.contains(username)) {
-						multicast.leaveGroup(group);
 						break;
 					}
 				} else if (!msg.contains(username)) {

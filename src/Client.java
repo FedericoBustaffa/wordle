@@ -160,7 +160,7 @@ public class Client {
 				registration.registerForNotification(notify_service);
 
 				multicast.joinGroup(group);
-				mc_receiver = new MulticastReceiver(group, multicast, scores, username);
+				mc_receiver = new MulticastReceiver(multicast, scores, username);
 				mc_receiver.start();
 			}
 		} catch (RemoteException e) {
@@ -183,12 +183,16 @@ public class Client {
 				notify_service = null;
 
 				mc_receiver.join();
+				multicast.leaveGroup(group);
+				scores.clear();
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (NoSuchObjectException e) {
 			e.printStackTrace();
 		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -221,17 +225,19 @@ public class Client {
 			String response = this.receive();
 			System.out.println(response);
 			if (!response.contains("ERROR")) {
-				username = null;
 				done = true;
-				if (notify_service != null)
+				if (username != null) {
+					username = null;
 					UnicastRemoteObject.unexportObject(notify_service, false);
-
-				if (mc_receiver != null)
 					mc_receiver.join();
+					multicast.leaveGroup(group);
+				}
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (NoSuchObjectException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
