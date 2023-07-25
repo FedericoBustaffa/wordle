@@ -5,14 +5,14 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Writer implements Runnable {
+public class Sender implements Runnable {
 
 	private Selector selector;
 	private SocketChannel socket;
 	private ByteStream stream;
 	private AtomicInteger ACTIVE_CONNECTIONS;
 
-	public Writer(Selector selector, SocketChannel socket,
+	public Sender(Selector selector, SocketChannel socket,
 			ByteStream stream, AtomicInteger ACTIVE_CONNECTIONS) {
 		this.selector = selector;
 		this.socket = socket;

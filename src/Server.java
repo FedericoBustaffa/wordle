@@ -29,11 +29,15 @@ public class Server {
 	private Set<User> users;
 	// private Set<User> playing_users; // giocatori online
 
+	// Wordle
+	Wordle wordle;
+
 	// JSON
 	private JsonWrapper json_wrapper;
 
 	// CONFIGURATION
 	private String BACKUP_USERS;
+	private String WORDS;
 	private int RMI_PORT;
 	private int TCP_PORT;
 	private String MULTICAST_ADDRESS;
@@ -70,6 +74,8 @@ public class Server {
 				line = scanner.nextLine().split("=");
 				if (line[0].equals("BACKUP_USERS"))
 					BACKUP_USERS = line[1];
+				else if (line[0].equals("WORDS"))
+					WORDS = line[1];
 				else if (line[0].equals("RMI_PORT"))
 					RMI_PORT = Integer.parseInt(line[1]);
 				else if (line[0].equals("TCP_PORT"))
@@ -91,6 +97,9 @@ public class Server {
 			// Json wrapper for backup
 			json_wrapper = new JsonWrapper(BACKUP_USERS);
 			users = Collections.synchronizedSet(json_wrapper.readArray());
+
+			// Wordle init
+			wordle = new Wordle(new File(WORDS));
 
 			// RMI
 			notify_services = Collections.synchronizedList(new LinkedList<Notify>());
@@ -156,10 +165,10 @@ public class Server {
 						ByteStream stream = (ByteStream) key.attachment();
 						if (key.isWritable()) {
 							key.cancel();
-							pool.execute(new Writer(selector, socket, stream, ACTIVE_CONNECTIONS));
+							pool.execute(new Sender(selector, socket, stream, ACTIVE_CONNECTIONS));
 						} else if (key.isReadable()) {
 							key.cancel();
-							pool.execute(new Reader(notify_services, selector, socket, stream,
+							pool.execute(new Receiver(notify_services, selector, socket, stream,
 									multicast, group, users));
 						}
 					}

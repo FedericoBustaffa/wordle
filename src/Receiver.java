@@ -9,7 +9,7 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Set;
 
-public class Reader implements Runnable {
+public class Receiver implements Runnable {
 
 	private List<Notify> notify_services;
 
@@ -22,7 +22,7 @@ public class Reader implements Runnable {
 
 	private Set<User> users;
 
-	public Reader(List<Notify> notify_services, Selector selector, SocketChannel socket,
+	public Receiver(List<Notify> notify_services, Selector selector, SocketChannel socket,
 			ByteStream stream, MulticastSocket multicast, SocketAddress group, Set<User> users) {
 		this.notify_services = notify_services;
 		this.selector = selector;
