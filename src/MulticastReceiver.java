@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.concurrent.BlockingQueue;
 
-public class MulticastReceiver implements Runnable {
+public class MulticastReceiver extends Thread {
 
 	private InetAddress group;
 	private MulticastSocket multicast;
@@ -26,9 +26,11 @@ public class MulticastReceiver implements Runnable {
 			while (true) {
 				multicast.receive(packet);
 				msg = new String(packet.getData(), 0, packet.getLength());
-				if (msg.contains("leave") && msg.contains(username)) {
-					multicast.leaveGroup(group);
-					break;
+				if (msg.contains("leave")) {
+					if (msg.contains(username)) {
+						multicast.leaveGroup(group);
+						break;
+					}
 				} else if (!msg.contains(username)) {
 					System.out.printf("\n< " + msg + "\n> ");
 					scores.add(msg);

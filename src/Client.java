@@ -11,6 +11,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -31,6 +32,7 @@ public class Client {
 	// RMI
 	private Registry registry;
 	private Registration registration;
+	private Notify notify_service;
 
 	// TCP
 	private SocketAddress tcp_address;
@@ -41,7 +43,7 @@ public class Client {
 	// MULTICAST
 	private MulticastSocket multicast;
 	private InetAddress group;
-	private Thread multicast_receiver;
+	private MulticastReceiver mc_receiver;
 	private BlockingQueue<String> scores;
 
 	public Client() {
@@ -51,13 +53,14 @@ public class Client {
 			done = false;
 			input = new Scanner(System.in);
 
-			// Configuration
+			// configuration file
 			File config = new File("client_config.txt");
 			if (!config.exists()) {
 				System.out.println("ERROR: server configuration file not found");
 				System.exit(1);
 			}
 
+			// configuration file parsing
 			Scanner scanner = new Scanner(config);
 			String[] line;
 			while (scanner.hasNext()) {
@@ -150,9 +153,12 @@ public class Client {
 			System.out.println(response);
 			if (!response.contains("ERROR")) {
 				username = response.split(" ")[3];
+				notify_service = new NotifyService();
+
 				multicast.joinGroup(group);
-				multicast_receiver = new Thread(new MulticastReceiver(group, multicast, scores, username));
-				multicast_receiver.start();
+
+				mc_receiver = new MulticastReceiver(group, multicast, scores, username);
+				mc_receiver.start();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -166,7 +172,7 @@ public class Client {
 			System.out.println(response);
 			if (!response.contains("ERROR")) {
 				username = null;
-				multicast_receiver.join();
+				mc_receiver.join();
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -193,8 +199,8 @@ public class Client {
 			if (!response.contains("ERROR")) {
 				username = null;
 				done = true;
-				if (multicast_receiver != null)
-					multicast_receiver.join();
+				if (mc_receiver != null)
+					mc_receiver.join();
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -231,6 +237,10 @@ public class Client {
 		try {
 			// Scanner closure
 			input.close();
+
+			// RMI closure
+			if (notify_service != null)
+				UnicastRemoteObject.unexportObject(notify_service, false);
 
 			// TCP closure
 			socket.close();

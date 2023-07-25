@@ -14,6 +14,8 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -40,6 +42,7 @@ public class Server {
 	// RMI
 	private Registry registry;
 	private Registration registration;
+	private List<Notify> notify_services;
 
 	// TCP
 	private AtomicInteger ACTIVE_CONNECTIONS;
@@ -60,6 +63,7 @@ public class Server {
 				System.exit(1);
 			}
 
+			// configuration file parsing
 			Scanner scanner = new Scanner(config);
 			String[] line;
 			while (scanner.hasNext()) {
@@ -84,7 +88,7 @@ public class Server {
 			// playing users init
 			// playing_users = Collections.synchronizedSet(new TreeSet<User>());
 
-			// Json backup
+			// Json wrapper for backup
 			json_wrapper = new JsonWrapper(BACKUP_USERS);
 			users = Collections.synchronizedSet(json_wrapper.readArray());
 
@@ -92,6 +96,7 @@ public class Server {
 			registration = new RegistrationService(users);
 			registry = LocateRegistry.createRegistry(RMI_PORT);
 			registry.rebind(Registration.SERVICE, registration);
+			notify_services = new LinkedList<Notify>();
 			System.out.println("< RMI service on port: " + RMI_PORT);
 
 			// TCP
