@@ -6,9 +6,12 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.List;
 import java.util.Set;
 
 public class Reader implements Runnable {
+
+	private List<Notify> notify_services;
 
 	private Selector selector;
 	private SocketChannel socket;
@@ -19,8 +22,9 @@ public class Reader implements Runnable {
 
 	private Set<User> users;
 
-	public Reader(Selector selector, SocketChannel socket, ByteStream stream,
-			MulticastSocket multicast, SocketAddress group, Set<User> users) {
+	public Reader(List<Notify> notify_services, Selector selector, SocketChannel socket,
+			ByteStream stream, MulticastSocket multicast, SocketAddress group, Set<User> users) {
+		this.notify_services = notify_services;
 		this.selector = selector;
 		this.socket = socket;
 		this.stream = stream;

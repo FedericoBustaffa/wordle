@@ -7,4 +7,9 @@ public class NotifyService extends UnicastRemoteObject implements Notify {
 		super();
 	}
 
+	@Override
+	public void update(String msg) throws RemoteException {
+		System.out.printf("\n< " + msg + "\n> ");
+	}
+
 }

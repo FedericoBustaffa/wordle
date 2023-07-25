@@ -7,4 +7,8 @@ public interface Registration extends Remote {
 
 	public String register(String username, String password) throws RemoteException;
 
+	public void registerForNotification(Notify notify) throws RemoteException;
+
+	public void unregisterForNotification(Notify notify) throws RemoteException;
+
 }

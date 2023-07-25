@@ -7,14 +7,16 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class Client {
 
@@ -44,7 +46,7 @@ public class Client {
 	private MulticastSocket multicast;
 	private InetAddress group;
 	private MulticastReceiver mc_receiver;
-	private BlockingQueue<String> scores;
+	private List<String> scores;
 
 	public Client() {
 		try {
@@ -92,7 +94,7 @@ public class Client {
 			multicast = new MulticastSocket(MULTICAST_PORT);
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
 
-			scores = new LinkedBlockingQueue<String>();
+			scores = Collections.synchronizedList(new LinkedList<String>());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
@@ -153,13 +155,16 @@ public class Client {
 			System.out.println(response);
 			if (!response.contains("ERROR")) {
 				username = response.split(" ")[3];
+
 				notify_service = new NotifyService();
+				registration.registerForNotification(notify_service);
 
 				multicast.joinGroup(group);
-
 				mc_receiver = new MulticastReceiver(group, multicast, scores, username);
 				mc_receiver.start();
 			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -172,9 +177,18 @@ public class Client {
 			System.out.println(response);
 			if (!response.contains("ERROR")) {
 				username = null;
+
+				registration.unregisterForNotification(notify_service);
+				UnicastRemoteObject.unexportObject(notify_service, false);
+				notify_service = null;
+
 				mc_receiver.join();
 			}
 		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (NoSuchObjectException e) {
+			e.printStackTrace();
+		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 	}
@@ -191,6 +205,16 @@ public class Client {
 		System.out.println(response);
 	}
 
+	private void showMeSharing() {
+		if (scores.size() == 0) {
+			System.out.println("< empty notification list");
+			return;
+		}
+
+		for (String s : scores)
+			System.out.println("< " + s);
+	}
+
 	private void exit(String cmd) {
 		try {
 			this.send(cmd + " " + username);
@@ -199,10 +223,15 @@ public class Client {
 			if (!response.contains("ERROR")) {
 				username = null;
 				done = true;
+				if (notify_service != null)
+					UnicastRemoteObject.unexportObject(notify_service, false);
+
 				if (mc_receiver != null)
 					mc_receiver.join();
 			}
 		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (NoSuchObjectException e) {
 			e.printStackTrace();
 		}
 	}
@@ -226,6 +255,8 @@ public class Client {
 				this.play(cmd);
 			else if (first.equals("share"))
 				this.share(cmd);
+			else if (first.equals("show"))
+				this.showMeSharing();
 			else if (first.equals("exit"))
 				this.exit(cmd);
 			else
@@ -237,10 +268,6 @@ public class Client {
 		try {
 			// Scanner closure
 			input.close();
-
-			// RMI closure
-			if (notify_service != null)
-				UnicastRemoteObject.unexportObject(notify_service, false);
 
 			// TCP closure
 			socket.close();

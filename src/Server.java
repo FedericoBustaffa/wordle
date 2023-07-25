@@ -93,10 +93,10 @@ public class Server {
 			users = Collections.synchronizedSet(json_wrapper.readArray());
 
 			// RMI
-			registration = new RegistrationService(users);
+			notify_services = Collections.synchronizedList(new LinkedList<Notify>());
+			registration = new RegistrationService(users, notify_services);
 			registry = LocateRegistry.createRegistry(RMI_PORT);
 			registry.rebind(Registration.SERVICE, registration);
-			notify_services = new LinkedList<Notify>();
 			System.out.println("< RMI service on port: " + RMI_PORT);
 
 			// TCP
@@ -148,17 +148,20 @@ public class Server {
 			while (it.hasNext()) {
 				key = it.next();
 				it.remove();
-				if (key.isAcceptable()) {
-					this.accept(key);
-				} else {
-					SocketChannel socket = (SocketChannel) key.channel();
-					ByteStream stream = (ByteStream) key.attachment();
-					if (key.isWritable()) {
-						key.cancel();
-						pool.execute(new Writer(selector, socket, stream, ACTIVE_CONNECTIONS));
-					} else if (key.isReadable()) {
-						key.cancel();
-						pool.execute(new Reader(selector, socket, stream, multicast, group, users));
+				if (key.isValid()) {
+					if (key.isAcceptable()) {
+						this.accept(key);
+					} else {
+						SocketChannel socket = (SocketChannel) key.channel();
+						ByteStream stream = (ByteStream) key.attachment();
+						if (key.isWritable()) {
+							key.cancel();
+							pool.execute(new Writer(selector, socket, stream, ACTIVE_CONNECTIONS));
+						} else if (key.isReadable()) {
+							key.cancel();
+							pool.execute(new Reader(notify_services, selector, socket, stream,
+									multicast, group, users));
+						}
 					}
 				}
 			}
@@ -175,7 +178,7 @@ public class Server {
 		try {
 			pool.shutdown();
 			while (!pool.awaitTermination(60L, TimeUnit.SECONDS))
-				;
+				System.out.println("< waiting for thread closure");
 
 			// JSON backup
 			json_wrapper.writeArray(users);
