@@ -24,13 +24,10 @@ public class MulticastReceiver extends Thread {
 				multicast.receive(packet);
 				msg = new String(packet.getData(), 0, packet.getLength());
 				if (msg.contains("logout") || msg.contains("exit")) {
-					if (msg.contains(username)) {
+					if (msg.contains(username))
 						break;
-					}
-				} else if (!msg.contains(username)) {
-					// System.out.printf("\n< " + msg + "\n> ");
+				} else if (!msg.contains(username))
 					scores.add(msg);
-				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -22,6 +22,7 @@ public class Client {
 
 	// UTILITY
 	private String username; // null if not logged
+	private int last_score;
 	private boolean done;
 	private Scanner input;
 
@@ -52,6 +53,7 @@ public class Client {
 		try {
 
 			username = null;
+			last_score = -1;
 			done = false;
 			input = new Scanner(System.in);
 
@@ -112,19 +114,6 @@ public class Client {
 		}
 	}
 
-	public String register(String cmd) {
-		try {
-			String[] parse = cmd.split(" ");
-			if (parse.length != 3)
-				return "< ERROR\n< USAGE: register <username> <password>";
-
-			return registration.register(parse[1], parse[2]);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	public void send(String cmd) {
 		try {
 			writer.writeUTF(cmd);
@@ -143,6 +132,19 @@ public class Client {
 		return null;
 	}
 
+	public String register(String cmd) {
+		try {
+			String[] parse = cmd.split(" ");
+			if (parse.length != 3)
+				return "< ERROR\n< USAGE: register <username> <password>";
+
+			return registration.register(parse[1], parse[2]);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	private void login(String cmd) {
 		if (username != null) {
 			System.out.println("< logout before login");
@@ -152,9 +154,9 @@ public class Client {
 		try {
 			this.send(cmd);
 			String response = this.receive();
-			System.out.println(response);
+			System.out.println("< " + response);
 			if (!response.contains("ERROR")) {
-				username = response.split(" ")[3];
+				username = cmd.split(" ")[1];
 
 				notify_service = new NotifyService(username);
 				registration.registerForNotification(notify_service);
@@ -170,12 +172,36 @@ public class Client {
 		}
 	}
 
+	private void play(String cmd) {
+		this.send(cmd + " " + username);
+		String response = this.receive();
+		System.out.println("< " + response);
+	}
+
+	private void share(String cmd) {
+		this.send(cmd + " " + username + " " + last_score);
+		String response = this.receive();
+		System.out.println("< " + response);
+	}
+
+	private void showMeSharing() {
+		if (scores.size() == 0) {
+			System.out.println("< there are no notifications");
+			return;
+		}
+
+		System.out.println("---- SCORES ----");
+		for (String s : scores)
+			System.out.println("< " + s);
+		System.out.println("----------------");
+	}
+
 	private void logout(String cmd) {
 		try {
 			this.send(cmd + " " + username);
 			String response = this.receive();
-			System.out.println(response);
-			if (!response.contains("ERROR")) {
+			System.out.println("< " + response);
+			if (!response.startsWith("ERROR")) {
 				username = null;
 
 				registration.unregisterForNotification(notify_service);
@@ -197,36 +223,12 @@ public class Client {
 		}
 	}
 
-	private void play(String cmd) {
-		this.send(cmd + " " + username);
-		String response = this.receive();
-		System.out.println(response);
-	}
-
-	private void share(String cmd) {
-		this.send(cmd + " " + username);
-		String response = this.receive();
-		System.out.println(response);
-	}
-
-	private void showMeSharing() {
-		if (scores.size() == 0) {
-			System.out.println("< there are no notifications");
-			return;
-		}
-
-		System.out.println("---- SCORES ----");
-		for (String s : scores)
-			System.out.println(s);
-		System.out.println("----------------");
-	}
-
 	private void exit(String cmd) {
 		try {
 			this.send(cmd + " " + username);
 			String response = this.receive();
-			System.out.println(response);
-			if (!response.contains("ERROR")) {
+			System.out.println("< " + response);
+			if (!response.startsWith("ERROR")) {
 				done = true;
 				if (username != null) {
 					username = null;
@@ -253,7 +255,7 @@ public class Client {
 			cmd = input.nextLine().trim();
 			first = cmd.split(" ")[0];
 
-			if (first.equals("register"))
+			if (first.startsWith("register"))
 				System.out.println(this.register(cmd));
 			else if (first.equals("login"))
 				this.login(cmd);

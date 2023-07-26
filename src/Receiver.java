@@ -24,7 +24,7 @@ public class Receiver implements Runnable {
 
 	private void login(String[] cmd) {
 		if (cmd.length != 3) {
-			stream.write("< ERROR USAGE: login <username> <password>");
+			stream.write("ERROR USAGE: login <username> <password>");
 			return;
 		}
 
@@ -35,29 +35,29 @@ public class Receiver implements Runnable {
 				if (password.equals(u.getPassword())) {
 					if (!u.isOnline()) {
 						u.online();
-						stream.write("< login success: " + username);
-						System.out.println("< " + username + " logged in");
+						stream.write("login success");
+						System.out.println(username + " logged in");
 					} else {
-						stream.write("< ERROR: already logged in");
+						stream.write("ERROR: already logged in");
 					}
 				} else {
-					stream.write("< ERROR: wrong password");
+					stream.write("ERROR: wrong password");
 				}
 				return;
 			}
 		}
-		stream.write("< ERROR: user " + username + " not registered");
+		stream.write("ERROR: user " + username + " not registered");
 	}
 
 	private void play(String[] cmd) {
 		if (cmd.length != 2) {
-			stream.write("< ERROR USAGE: play");
+			stream.write("ERROR USAGE: play");
 			return;
 		}
 
 		String username = cmd[1];
 		if (username.equals("null")) {
-			stream.write("< ERROR: login to play");
+			stream.write("ERROR: login to play");
 			return;
 		} else {
 			int score = new Random().nextInt(10);
@@ -69,7 +69,7 @@ public class Receiver implements Runnable {
 					it.remove();
 					user.setScore(score);
 					users.add(user);
-					stream.write("< score: " + username + " " + score);
+					stream.write("play: " + username + " " + score);
 					return;
 				}
 			}
@@ -77,30 +77,33 @@ public class Receiver implements Runnable {
 	}
 
 	private void share(String[] cmd) {
-		System.out.println("< share");
-		if (cmd.length != 2) {
-			stream.write("< ERROR USAGE: share");
+		if (cmd.length != 3) {
+			stream.write("ERROR USAGE: share");
 			return;
 		}
 
 		String username = cmd[1];
+		int last_score = Integer.parseInt(cmd[2]);
 		if (username.equals("null")) {
-			stream.write("< ERROR: login to share your score");
+			stream.write("ERROR: login to share your score");
+			return;
+		} else if (last_score == -1) {
+			stream.write("ERROR: play at least one game to share your score");
 			return;
 		}
 
-		stream.write("< share score " + cmd[1]);
+		stream.write("share: " + username + " " + last_score);
 	}
 
 	private void logout(String[] cmd) {
 		if (cmd.length != 2) {
-			stream.write("< ERROR USAGE: logout");
+			stream.write("ERROR USAGE: logout");
 			return;
 		}
 
 		String username = cmd[1];
 		if (username.equals("null")) {
-			stream.write("< ERROR: login before logout");
+			stream.write("ERROR: login before logout");
 			return;
 		}
 
@@ -108,34 +111,34 @@ public class Receiver implements Runnable {
 			if (username.equals(u.getUsername())) {
 				if (u.isOnline()) {
 					u.offline();
-					stream.write("< logout success: " + username);
-					System.out.println("< " + username + " has left");
+					stream.write("logout success: " + username);
+					System.out.println(username + " has left");
 				} else {
-					stream.write("< ERROR: not logged in yet");
+					stream.write("ERROR: not logged in yet");
 				}
 				return;
 			}
 		}
-		stream.write("< ERROR: user " + username + " not present");
+		stream.write("ERROR: user " + username + " not present");
 	}
 
 	private void exit(String[] cmd) {
 		if (cmd.length != 2) {
-			stream.write("< ERROR USAGE: exit");
+			stream.write("ERROR USAGE: exit");
 			return;
 		} else if (!cmd[1].equals("null")) {
 			String username = cmd[1];
 			for (User u : users) {
 				if (username.equals(u.getUsername())) {
 					u.offline();
-					stream.write("< exit success " + username);
-					System.out.println("< " + username + " logged out");
+					stream.write("exit success " + username);
+					System.out.println(username + " logged out");
 					return;
 				}
 			}
-			stream.write("< ERROR: username " + username + " not present");
+			stream.write("ERROR: username " + username + " not present");
 		} else {
-			stream.write("< exit success");
+			stream.write("exit success");
 		}
 	}
 
@@ -165,4 +168,5 @@ public class Receiver implements Runnable {
 			e.printStackTrace();
 		}
 	}
+
 }

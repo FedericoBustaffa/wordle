@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,29 +38,51 @@ public class Sender implements Runnable {
 		this.group = group;
 	}
 
+	public void play(String msg) {
+		try {
+			String username = msg.split(" ")[1];
+			int score = Integer.parseInt(msg.split(" ")[2]);
+
+			for (Notify notifier : notifiers) {
+				if (!username.equals(notifier.getUsername()))
+					notifier.update(username + ": " + score);
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void share(String msg) {
+		try {
+			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
+			multicast.send(packet);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void run() {
 		try {
-			byte[] bytes = stream.getBytes();
-			String response = new String(bytes);
-			if (!response.contains("ERROR")) {
-				if (response.contains("score")) {
-					for (Notify notify : notifiers) {
-						if (!notify.getUsername().equals(response.split(" ")[2]))
-							notify.update("< " + response);
-					}
+			String msg = new String(stream.getBytes());
+			if (!msg.contains("ERROR")) {
+				if (msg.contains("play")) {
+					play(msg);
+				} else if (msg.contains("share")) {
+					share(msg);
 				}
-				if (response.contains("share") ||
-						response.contains("logout") ||
-						response.contains("exit")) {
-					DatagramPacket packet = new DatagramPacket(bytes, 0, bytes.length, group);
-					multicast.send(packet);
-				}
+			}
+
+			if (response.contains("share") ||
+					response.contains("logout") ||
+					response.contains("exit")) {
+				DatagramPacket packet = new DatagramPacket(bytes, 0, bytes.length, group);
+				multicast.send(packet);
 			}
 			ByteBuffer buffer = ByteBuffer.wrap(bytes);
 			while (buffer.hasRemaining())
 				socket.write(buffer);
-			String msg = new String(bytes, 0, bytes.length);
-			if (msg.contains("exit success")) {
+			if (response.contains("exit success")) {
 				stream.close();
 				ACTIVE_CONNECTIONS.decrementAndGet();
 				System.out.println("< client has left");
@@ -68,7 +91,9 @@ public class Sender implements Runnable {
 			}
 			socket.register(selector, SelectionKey.OP_READ, stream);
 			selector.wakeup();
-		} catch (IOException e) {
+		} catch (
+
+		IOException e) {
 			e.printStackTrace();
 		}
 	}
