@@ -46,7 +46,7 @@ public class Server {
 	// RMI
 	private Registry registry;
 	private Registration registration;
-	private List<Notify> notify_services;
+	private List<Notify> notifiers;
 
 	// TCP
 	private AtomicInteger ACTIVE_CONNECTIONS;
@@ -102,8 +102,8 @@ public class Server {
 			wordle = new Wordle(new File(WORDS));
 
 			// RMI
-			notify_services = Collections.synchronizedList(new LinkedList<Notify>());
-			registration = new RegistrationService(users, notify_services);
+			notifiers = Collections.synchronizedList(new LinkedList<Notify>());
+			registration = new RegistrationService(users, notifiers);
 			registry = LocateRegistry.createRegistry(RMI_PORT);
 			registry.rebind(Registration.SERVICE, registration);
 			System.out.println("< RMI service on port: " + RMI_PORT);
@@ -165,11 +165,11 @@ public class Server {
 						ByteStream stream = (ByteStream) key.attachment();
 						if (key.isWritable()) {
 							key.cancel();
-							pool.execute(new Sender(selector, socket, stream, ACTIVE_CONNECTIONS));
+							pool.execute(new Sender(notifiers, selector, socket, stream,
+									ACTIVE_CONNECTIONS, multicast, group));
 						} else if (key.isReadable()) {
 							key.cancel();
-							pool.execute(new Receiver(notify_services, selector, socket, stream,
-									multicast, group, users));
+							pool.execute(new Receiver(selector, socket, stream, users));
 						}
 					}
 				}

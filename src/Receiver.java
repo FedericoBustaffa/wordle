@@ -1,35 +1,24 @@
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.MulticastSocket;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.List;
+import java.util.Iterator;
+import java.util.Random;
 import java.util.Set;
 
 public class Receiver implements Runnable {
-
-	private List<Notify> notify_services;
 
 	private Selector selector;
 	private SocketChannel socket;
 	private ByteStream stream;
 
-	private MulticastSocket multicast;
-	private SocketAddress group;
-
 	private Set<User> users;
 
-	public Receiver(List<Notify> notify_services, Selector selector, SocketChannel socket,
-			ByteStream stream, MulticastSocket multicast, SocketAddress group, Set<User> users) {
-		this.notify_services = notify_services;
+	public Receiver(Selector selector, SocketChannel socket, ByteStream stream, Set<User> users) {
 		this.selector = selector;
 		this.socket = socket;
 		this.stream = stream;
-		this.multicast = multicast;
-		this.group = group;
 		this.users = users;
 	}
 
@@ -46,7 +35,7 @@ public class Receiver implements Runnable {
 				if (password.equals(u.getPassword())) {
 					if (!u.isOnline()) {
 						u.online();
-						stream.write("< logged as " + username);
+						stream.write("< login success: " + username);
 						System.out.println("< " + username + " logged in");
 					} else {
 						stream.write("< ERROR: already logged in");
@@ -71,9 +60,20 @@ public class Receiver implements Runnable {
 			stream.write("< ERROR: login to play");
 			return;
 		} else {
-
+			int score = new Random().nextInt(10);
+			Iterator<User> it = users.iterator();
+			User user;
+			while (it.hasNext()) {
+				user = it.next();
+				if (username.equals(user.getUsername())) {
+					it.remove();
+					user.setScore(score);
+					users.add(user);
+					stream.write("< score: " + username + " " + score);
+					return;
+				}
+			}
 		}
-		stream.write("< play");
 	}
 
 	private void share(String[] cmd) {
@@ -89,13 +89,7 @@ public class Receiver implements Runnable {
 			return;
 		}
 
-		stream.write("< sharing score");
-		try {
-			DatagramPacket packet = new DatagramPacket(cmd[1].getBytes(), cmd[1].length(), group);
-			multicast.send(packet);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		stream.write("< share score " + cmd[1]);
 	}
 
 	private void logout(String[] cmd) {
@@ -114,15 +108,8 @@ public class Receiver implements Runnable {
 			if (username.equals(u.getUsername())) {
 				if (u.isOnline()) {
 					u.offline();
-					stream.write("< logged out from " + username);
+					stream.write("< logout success: " + username);
 					System.out.println("< " + username + " has left");
-					try {
-						String msg = "leave " + username;
-						DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), group);
-						multicast.send(packet);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
 				} else {
 					stream.write("< ERROR: not logged in yet");
 				}
@@ -141,15 +128,8 @@ public class Receiver implements Runnable {
 			for (User u : users) {
 				if (username.equals(u.getUsername())) {
 					u.offline();
-					stream.write("< exit success");
+					stream.write("< exit success " + username);
 					System.out.println("< " + username + " logged out");
-					try {
-						String msg = "leave " + username;
-						DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), group);
-						multicast.send(packet);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
 					return;
 				}
 			}

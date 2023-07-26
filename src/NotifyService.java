@@ -3,8 +3,15 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class NotifyService extends UnicastRemoteObject implements Notify {
 
-	public NotifyService() throws RemoteException {
-		super();
+	private String username;
+
+	public NotifyService(String username) throws RemoteException {
+		this.username = username;
+	}
+
+	@Override
+	public String getUsername() throws RemoteException {
+		return username;
 	}
 
 	@Override

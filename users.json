@@ -4,19 +4,19 @@
   "score" : 10,
   "online" : false
 }, {
-  "username" : "chiara",
-  "password" : "ch14r4",
-  "score" : 3,
-  "online" : false
-}, {
   "username" : "fede",
   "password" : "f3d3",
-  "score" : 2,
+  "score" : 6,
   "online" : false
 }, {
   "username" : "betta",
   "password" : "b3tt4",
-  "score" : 1,
+  "score" : 3,
+  "online" : false
+}, {
+  "username" : "chiara",
+  "password" : "ch14r4",
+  "score" : 3,
   "online" : false
 }, {
   "username" : "andrea",

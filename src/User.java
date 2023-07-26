@@ -30,6 +30,10 @@ public class User implements Comparable<User>, Serializable {
 		return score;
 	}
 
+	public void setScore(int score) {
+		this.score = score;
+	}
+
 	public boolean isOnline() {
 		return online;
 	}

@@ -23,7 +23,7 @@ public class MulticastReceiver extends Thread {
 			while (true) {
 				multicast.receive(packet);
 				msg = new String(packet.getData(), 0, packet.getLength());
-				if (msg.contains("leave")) {
+				if (msg.contains("logout") || msg.contains("exit")) {
 					if (msg.contains(username)) {
 						break;
 					}

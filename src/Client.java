@@ -156,7 +156,7 @@ public class Client {
 			if (!response.contains("ERROR")) {
 				username = response.split(" ")[3];
 
-				notify_service = new NotifyService();
+				notify_service = new NotifyService(username);
 				registration.registerForNotification(notify_service);
 
 				multicast.joinGroup(group);
@@ -211,12 +211,14 @@ public class Client {
 
 	private void showMeSharing() {
 		if (scores.size() == 0) {
-			System.out.println("< empty notification list");
+			System.out.println("< there are no notifications");
 			return;
 		}
 
+		System.out.println("---- SCORES ----");
 		for (String s : scores)
-			System.out.println("< " + s);
+			System.out.println(s);
+		System.out.println("----------------");
 	}
 
 	private void exit(String cmd) {

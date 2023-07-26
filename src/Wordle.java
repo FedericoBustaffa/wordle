@@ -19,10 +19,6 @@ public class Wordle {
 			while (scanner.hasNext()) {
 				words.add(scanner.nextLine());
 			}
-
-			for (String w : words) {
-				System.out.println(w);
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
