@@ -22,6 +22,15 @@ public class Receiver implements Runnable {
 		this.users = users;
 	}
 
+	private void help(String[] cmd) {
+		if (cmd.length != 1) {
+			stream.write("ERROR USAGE: help");
+			return;
+		}
+
+		stream.write("help");
+	}
+
 	private void login(String[] cmd) {
 		if (cmd.length != 3) {
 			stream.write("ERROR USAGE: login <username> <password>");
@@ -36,7 +45,7 @@ public class Receiver implements Runnable {
 					if (!u.isOnline()) {
 						u.online();
 						stream.write("login success");
-						System.out.println(username + " logged in");
+						System.out.println("< " + username + " logged in");
 					} else {
 						stream.write("ERROR: already logged in");
 					}
@@ -112,7 +121,7 @@ public class Receiver implements Runnable {
 				if (u.isOnline()) {
 					u.offline();
 					stream.write("logout success: " + username);
-					System.out.println(username + " has left");
+					System.out.println("< " + username + " left");
 				} else {
 					stream.write("ERROR: not logged in yet");
 				}
@@ -132,7 +141,7 @@ public class Receiver implements Runnable {
 				if (username.equals(u.getUsername())) {
 					u.offline();
 					stream.write("exit success " + username);
-					System.out.println(username + " logged out");
+					System.out.println("< " + username + " left");
 					return;
 				}
 			}
@@ -150,7 +159,9 @@ public class Receiver implements Runnable {
 			if (b != -1) {
 				String[] cmd = new String(buffer.array(), 0, b).split(" ");
 				String first = cmd[0].trim();
-				if (first.equals("login"))
+				if (first.equals("help"))
+					help(cmd);
+				else if (first.equals("login"))
 					login(cmd);
 				else if (first.equals("play"))
 					play(cmd);

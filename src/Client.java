@@ -132,6 +132,12 @@ public class Client {
 		return null;
 	}
 
+	private void help(String cmd) {
+		this.send(cmd);
+		String response = this.receive();
+		System.out.println("< " + response);
+	}
+
 	public String register(String cmd) {
 		try {
 			String[] parse = cmd.split(" ");
@@ -176,6 +182,8 @@ public class Client {
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
+		if (!response.contains("ERROR"))
+			last_score = Integer.parseInt(response.split(" ")[2]);
 	}
 
 	private void share(String cmd) {
@@ -254,8 +262,9 @@ public class Client {
 			System.out.printf("> ");
 			cmd = input.nextLine().trim();
 			first = cmd.split(" ")[0];
-
-			if (first.startsWith("register"))
+			if (first.equals("help"))
+				this.help(cmd);
+			else if (first.startsWith("register"))
 				System.out.println(this.register(cmd));
 			else if (first.equals("login"))
 				this.login(cmd);

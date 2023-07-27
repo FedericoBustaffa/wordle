@@ -38,7 +38,20 @@ public class Sender implements Runnable {
 		this.group = group;
 	}
 
-	public void play(String msg) {
+	private void help() {
+		String commands = "--- HELP ---\n" +
+				"< register <username> <password>\n" +
+				"< login <username> <password>\n" +
+				"< play\n" +
+				"< share\n" +
+				"< show\n" +
+				"< logout\n" +
+				"< exit";
+
+		stream.write(commands);
+	}
+
+	private void play(String msg) {
 		try {
 			String username = msg.split(" ")[1];
 			int score = Integer.parseInt(msg.split(" ")[2]);
@@ -53,10 +66,32 @@ public class Sender implements Runnable {
 
 	}
 
-	public void share(String msg) {
+	private void share(String msg) {
 		try {
 			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
 			multicast.send(packet);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void logout(String msg) {
+		try {
+			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
+			multicast.send(packet);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void exit(String msg) {
+		try {
+			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
+			multicast.send(packet);
+			stream.close();
+			ACTIVE_CONNECTIONS.decrementAndGet();
+			System.out.println("< client has left: " + ACTIVE_CONNECTIONS.get() + " connections");
+			selector.wakeup();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -66,34 +101,27 @@ public class Sender implements Runnable {
 		try {
 			String msg = new String(stream.getBytes());
 			if (!msg.contains("ERROR")) {
-				if (msg.contains("play")) {
-					play(msg);
+				if (msg.contains("help")) {
+					this.help();
+				} else if (msg.contains("play")) {
+					this.play(msg);
 				} else if (msg.contains("share")) {
-					share(msg);
+					this.share(msg);
+				} else if (msg.contains("logout")) {
+					this.logout(msg);
+				} else if (msg.contains("exit")) {
+					this.exit(msg);
+					return;
 				}
 			}
 
-			if (response.contains("share") ||
-					response.contains("logout") ||
-					response.contains("exit")) {
-				DatagramPacket packet = new DatagramPacket(bytes, 0, bytes.length, group);
-				multicast.send(packet);
-			}
-			ByteBuffer buffer = ByteBuffer.wrap(bytes);
+			ByteBuffer buffer = ByteBuffer.wrap(stream.getBytes());
 			while (buffer.hasRemaining())
 				socket.write(buffer);
-			if (response.contains("exit success")) {
-				stream.close();
-				ACTIVE_CONNECTIONS.decrementAndGet();
-				System.out.println("< client has left");
-				selector.wakeup();
-				return;
-			}
+
 			socket.register(selector, SelectionKey.OP_READ, stream);
 			selector.wakeup();
-		} catch (
-
-		IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
