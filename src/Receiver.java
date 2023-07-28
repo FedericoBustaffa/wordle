@@ -11,29 +11,38 @@ public class Receiver implements Runnable {
 
 	private Selector selector;
 	private SocketChannel socket;
-	private ByteStream stream;
+	private ByteBuffer buffer;
 
 	private Set<User> users;
 
-	public Receiver(Selector selector, SocketChannel socket, ByteStream stream, Set<User> users) {
+	public Receiver(Selector selector, SocketChannel socket, ByteBuffer buffer, Set<User> users) {
 		this.selector = selector;
 		this.socket = socket;
-		this.stream = stream;
+		this.buffer = buffer;
 		this.users = users;
 	}
 
 	private void help(String[] cmd) {
 		if (cmd.length != 1) {
-			stream.write("ERROR USAGE: help");
+			buffer.put("ERROR USAGE: help".getBytes());
 			return;
 		}
 
-		stream.write("help");
+		String commands = "--- HELP ---\n" +
+				"< register <username> <password>\n" +
+				"< login <username> <password>\n" +
+				"< play\n" +
+				"< share\n" +
+				"< show\n" +
+				"< logout\n" +
+				"< exit";
+
+		buffer.put(commands.getBytes());
 	}
 
 	private void login(String[] cmd) {
 		if (cmd.length != 3) {
-			stream.write("ERROR USAGE: login <username> <password>");
+			buffer.put("ERROR USAGE: login <username> <password>".getBytes());
 			return;
 		}
 
@@ -44,29 +53,29 @@ public class Receiver implements Runnable {
 				if (password.equals(u.getPassword())) {
 					if (!u.isOnline()) {
 						u.online();
-						stream.write("login success");
+						buffer.put("login success".getBytes());
 						System.out.println("< " + username + " logged in");
 					} else {
-						stream.write("ERROR: already logged in");
+						buffer.put("ERROR: already logged in".getBytes());
 					}
 				} else {
-					stream.write("ERROR: wrong password");
+					buffer.put("ERROR: wrong password".getBytes());
 				}
 				return;
 			}
 		}
-		stream.write("ERROR: user " + username + " not registered");
+		buffer.put(("ERROR: user " + username + " not registered").getBytes());
 	}
 
 	private void play(String[] cmd) {
 		if (cmd.length != 2) {
-			stream.write("ERROR USAGE: play");
+			buffer.put("ERROR USAGE: play".getBytes());
 			return;
 		}
 
 		String username = cmd[1];
 		if (username.equals("null")) {
-			stream.write("ERROR: login to play");
+			buffer.put("ERROR: login to play".getBytes());
 			return;
 		} else {
 			int score = new Random().nextInt(10);
@@ -78,7 +87,7 @@ public class Receiver implements Runnable {
 					it.remove();
 					user.setScore(score);
 					users.add(user);
-					stream.write("play: " + username + " " + score);
+					buffer.put(("play: " + username + " " + score).getBytes());
 					return;
 				}
 			}
@@ -87,32 +96,32 @@ public class Receiver implements Runnable {
 
 	private void share(String[] cmd) {
 		if (cmd.length != 3) {
-			stream.write("ERROR USAGE: share");
+			buffer.put("ERROR USAGE: share".getBytes());
 			return;
 		}
 
 		String username = cmd[1];
 		int last_score = Integer.parseInt(cmd[2]);
 		if (username.equals("null")) {
-			stream.write("ERROR: login to share your score");
+			buffer.put("ERROR: login to share your score".getBytes());
 			return;
 		} else if (last_score == -1) {
-			stream.write("ERROR: play at least one game to share your score");
+			buffer.put("ERROR: play at least one game to share your score".getBytes());
 			return;
 		}
 
-		stream.write("share: " + username + " " + last_score);
+		buffer.put(("share: " + username + " " + last_score).getBytes());
 	}
 
 	private void logout(String[] cmd) {
 		if (cmd.length != 2) {
-			stream.write("ERROR USAGE: logout");
+			buffer.put("ERROR USAGE: logout".getBytes());
 			return;
 		}
 
 		String username = cmd[1];
 		if (username.equals("null")) {
-			stream.write("ERROR: login before logout");
+			buffer.put("ERROR: login before logout".getBytes());
 			return;
 		}
 
@@ -120,45 +129,45 @@ public class Receiver implements Runnable {
 			if (username.equals(u.getUsername())) {
 				if (u.isOnline()) {
 					u.offline();
-					stream.write("logout success: " + username);
+					buffer.put(("logout success: " + username).getBytes());
 					System.out.println("< " + username + " left");
 				} else {
-					stream.write("ERROR: not logged in yet");
+					buffer.put(("ERROR: not logged in yet").getBytes());
 				}
 				return;
 			}
 		}
-		stream.write("ERROR: user " + username + " not present");
+		buffer.put(("ERROR: user " + username + " not present").getBytes());
 	}
 
 	private void exit(String[] cmd) {
 		if (cmd.length != 2) {
-			stream.write("ERROR USAGE: exit");
+			buffer.put("ERROR USAGE: exit".getBytes());
 			return;
 		} else if (!cmd[1].equals("null")) {
 			String username = cmd[1];
 			for (User u : users) {
 				if (username.equals(u.getUsername())) {
 					u.offline();
-					stream.write("exit success " + username);
+					buffer.put(("exit success " + username).getBytes());
 					System.out.println("< " + username + " left");
 					return;
 				}
 			}
-			stream.write("ERROR: username " + username + " not present");
+			buffer.put(("ERROR: username " + username + " not present").getBytes());
 		} else {
-			stream.write("exit success");
+			buffer.put("exit success".getBytes());
 		}
 	}
 
 	public void run() {
 		try {
-			ByteBuffer buffer = ByteBuffer.allocate(512);
 			buffer.clear();
 			int b = socket.read(buffer);
 			if (b != -1) {
 				String[] cmd = new String(buffer.array(), 0, b).split(" ");
 				String first = cmd[0].trim();
+				buffer.clear();
 				if (first.equals("help"))
 					help(cmd);
 				else if (first.equals("login"))
@@ -172,7 +181,7 @@ public class Receiver implements Runnable {
 				else if (first.equals("exit"))
 					exit(cmd);
 
-				socket.register(selector, SelectionKey.OP_WRITE, stream);
+				socket.register(selector, SelectionKey.OP_WRITE, buffer);
 				selector.wakeup();
 			}
 		} catch (IOException e) {

@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -140,7 +141,7 @@ public class Server {
 			ServerSocketChannel server = (ServerSocketChannel) key.channel();
 			SocketChannel socket = server.accept();
 			socket.configureBlocking(false);
-			socket.register(selector, SelectionKey.OP_READ, new ByteStream(1024));
+			socket.register(selector, SelectionKey.OP_READ, ByteBuffer.allocate(512));
 			ACTIVE_CONNECTIONS.incrementAndGet();
 			System.out.println("< new client connected");
 		} catch (IOException e) {
@@ -162,14 +163,14 @@ public class Server {
 						this.accept(key);
 					} else {
 						SocketChannel socket = (SocketChannel) key.channel();
-						ByteStream stream = (ByteStream) key.attachment();
+						ByteBuffer buffer = (ByteBuffer) key.attachment();
 						if (key.isWritable()) {
 							key.cancel();
-							pool.execute(new Sender(notifiers, selector, socket, stream,
+							pool.execute(new Sender(notifiers, selector, socket, buffer,
 									ACTIVE_CONNECTIONS, multicast, group));
 						} else if (key.isReadable()) {
 							key.cancel();
-							pool.execute(new Receiver(selector, socket, stream, users));
+							pool.execute(new Receiver(selector, socket, buffer, users));
 						}
 					}
 				}

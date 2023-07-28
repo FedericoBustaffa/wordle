@@ -1,7 +1,7 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
@@ -40,8 +40,8 @@ public class Client {
 	// TCP
 	private SocketAddress tcp_address;
 	private Socket socket;
-	private DataInputStream reader;
-	private DataOutputStream writer;
+	private InputStream reader;
+	private OutputStream writer;
 
 	// MULTICAST
 	private MulticastSocket multicast;
@@ -107,8 +107,8 @@ public class Client {
 	public void connect() {
 		try {
 			socket.connect(tcp_address);
-			reader = new DataInputStream(socket.getInputStream());
-			writer = new DataOutputStream(socket.getOutputStream());
+			reader = socket.getInputStream();
+			writer = socket.getOutputStream();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -116,7 +116,7 @@ public class Client {
 
 	public void send(String cmd) {
 		try {
-			writer.writeUTF(cmd);
+			writer.write(cmd.getBytes(), 0, cmd.length());
 			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -125,7 +125,9 @@ public class Client {
 
 	public String receive() {
 		try {
-			return reader.readUTF();
+			byte[] buffer = new byte[512];
+			int bytes = reader.read(buffer);
+			return new String(buffer, 0, bytes);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -209,7 +211,7 @@ public class Client {
 			this.send(cmd + " " + username);
 			String response = this.receive();
 			System.out.println("< " + response);
-			if (!response.startsWith("ERROR")) {
+			if (!response.contains("ERROR")) {
 				username = null;
 
 				registration.unregisterForNotification(notify_service);
@@ -236,7 +238,7 @@ public class Client {
 			this.send(cmd + " " + username);
 			String response = this.receive();
 			System.out.println("< " + response);
-			if (!response.startsWith("ERROR")) {
+			if (!response.contains("ERROR")) {
 				done = true;
 				if (username != null) {
 					username = null;
@@ -264,7 +266,7 @@ public class Client {
 			first = cmd.split(" ")[0];
 			if (first.equals("help"))
 				this.help(cmd);
-			else if (first.startsWith("register"))
+			else if (first.equals("register"))
 				System.out.println(this.register(cmd));
 			else if (first.equals("login"))
 				this.login(cmd);
