@@ -154,7 +154,8 @@ public class Server {
 
 	public void multiplex() {
 		try {
-			selector.select(5000L);
+			System.out.println("- - - - - - - -");
+			System.out.println("< channels ready: " + selector.select());
 			Set<SelectionKey> readyKeys = selector.selectedKeys();
 			Iterator<SelectionKey> it = readyKeys.iterator();
 			SelectionKey key;
@@ -163,11 +164,14 @@ public class Server {
 				it.remove();
 				if (key.isValid()) {
 					if (key.isAcceptable()) {
+						System.out.println("< ACCEPT");
 						this.accept(key);
 					} else if (key.isWritable()) {
+						System.out.println("< WRITE");
 						key.interestOps(0);
 						pool.execute(new Sender(key));
 					} else if (key.isReadable()) {
+						System.out.println("< READ");
 						key.interestOps(0);
 						pool.execute(new Receiver(key));
 					}
