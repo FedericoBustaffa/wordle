@@ -51,7 +51,6 @@ public class Client {
 
 	public Client() {
 		try {
-
 			username = null;
 			last_score = -1;
 			done = false;

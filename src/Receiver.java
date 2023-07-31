@@ -9,17 +9,21 @@ import java.util.Set;
 
 public class Receiver implements Runnable {
 
+	private SelectionKey key;
+	private Attachment attachment;
 	private Selector selector;
 	private SocketChannel socket;
 	private ByteBuffer buffer;
 
 	private Set<User> users;
 
-	public Receiver(Selector selector, SocketChannel socket, ByteBuffer buffer, Set<User> users) {
-		this.selector = selector;
-		this.socket = socket;
-		this.buffer = buffer;
-		this.users = users;
+	public Receiver(SelectionKey key) {
+		this.key = key;
+		this.attachment = (Attachment) key.attachment();
+		this.selector = key.selector();
+		this.socket = (SocketChannel) key.channel();
+		this.buffer = attachment.getBuffer();
+		this.users = attachment.getUsers();
 	}
 
 	private void help(String[] cmd) {
@@ -181,7 +185,8 @@ public class Receiver implements Runnable {
 				else if (first.equals("exit"))
 					exit(cmd);
 
-				socket.register(selector, SelectionKey.OP_WRITE, buffer);
+				key.interestOps(SelectionKey.OP_WRITE);
+				key.attach(attachment);
 				selector.wakeup();
 			}
 		} catch (IOException e) {

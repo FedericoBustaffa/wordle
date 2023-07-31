@@ -12,8 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Sender implements Runnable {
 
-	// RMI notifiers
-	private List<Notify> notifiers;
+	// Attachment
+	private SelectionKey key;
+	private Attachment attachment;
 
 	// TCP
 	private Selector selector;
@@ -21,21 +22,26 @@ public class Sender implements Runnable {
 	private ByteBuffer buffer;
 	private AtomicInteger ACTIVE_CONNECTIONS;
 
+	// RMI notifiers
+	private List<Notify> notifiers;
+
 	// MULTICAST
 	MulticastSocket multicast;
 	SocketAddress group;
 
-	public Sender(List<Notify> notifiers, Selector selector, SocketChannel socket, ByteBuffer buffer,
-			AtomicInteger ACTIVE_CONNECTIONS, MulticastSocket multicast, SocketAddress group) {
-		this.notifiers = notifiers;
+	public Sender(SelectionKey key) {
+		this.key = key;
+		this.attachment = (Attachment) key.attachment();
 
-		this.selector = selector;
-		this.socket = socket;
-		this.buffer = buffer;
-		this.ACTIVE_CONNECTIONS = ACTIVE_CONNECTIONS;
+		this.selector = key.selector();
+		this.socket = (SocketChannel) key.channel();
+		this.buffer = attachment.getBuffer();
+		this.ACTIVE_CONNECTIONS = attachment.getActiveConnections();
 
-		this.multicast = multicast;
-		this.group = group;
+		this.notifiers = attachment.getNotifiers();
+
+		this.multicast = attachment.getMulticast();
+		this.group = attachment.getGroup();
 	}
 
 	private void share(String msg) {
@@ -61,8 +67,8 @@ public class Sender implements Runnable {
 			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
 			multicast.send(packet);
 
-			ACTIVE_CONNECTIONS.decrementAndGet();
-			System.out.println("< client has left: " + ACTIVE_CONNECTIONS.get() + " connections");
+			System.out.println("< client has left: " +
+					ACTIVE_CONNECTIONS.decrementAndGet() + " connections");
 			selector.wakeup();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -90,7 +96,8 @@ public class Sender implements Runnable {
 				}
 			}
 
-			socket.register(selector, SelectionKey.OP_READ, buffer);
+			key.interestOps(SelectionKey.OP_READ);
+			key.attach(attachment);
 			selector.wakeup();
 		} catch (IOException e) {
 			e.printStackTrace();

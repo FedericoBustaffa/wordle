@@ -141,9 +141,12 @@ public class Server {
 			ServerSocketChannel server = (ServerSocketChannel) key.channel();
 			SocketChannel socket = server.accept();
 			socket.configureBlocking(false);
-			socket.register(selector, SelectionKey.OP_READ, ByteBuffer.allocate(512));
-			ACTIVE_CONNECTIONS.incrementAndGet();
-			System.out.println("< new client connected");
+			System.out.println("< new client connected: " +
+					ACTIVE_CONNECTIONS.incrementAndGet() + " clients connected");
+			ByteBuffer buffer = ByteBuffer.allocate(512);
+			Attachment attachment = new Attachment(buffer, users, ACTIVE_CONNECTIONS,
+					notifiers, multicast, group);
+			socket.register(selector, SelectionKey.OP_READ, attachment);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -151,7 +154,7 @@ public class Server {
 
 	public void multiplex() {
 		try {
-			selector.select();
+			selector.select(5000L);
 			Set<SelectionKey> readyKeys = selector.selectedKeys();
 			Iterator<SelectionKey> it = readyKeys.iterator();
 			SelectionKey key;
@@ -161,17 +164,12 @@ public class Server {
 				if (key.isValid()) {
 					if (key.isAcceptable()) {
 						this.accept(key);
-					} else {
-						SocketChannel socket = (SocketChannel) key.channel();
-						ByteBuffer buffer = (ByteBuffer) key.attachment();
-						if (key.isWritable()) {
-							key.cancel();
-							pool.execute(new Sender(notifiers, selector, socket, buffer,
-									ACTIVE_CONNECTIONS, multicast, group));
-						} else if (key.isReadable()) {
-							key.cancel();
-							pool.execute(new Receiver(selector, socket, buffer, users));
-						}
+					} else if (key.isWritable()) {
+						key.interestOps(0);
+						pool.execute(new Sender(key));
+					} else if (key.isReadable()) {
+						key.interestOps(0);
+						pool.execute(new Receiver(key));
 					}
 				}
 			}
