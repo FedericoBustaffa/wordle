@@ -13,10 +13,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Client {
 
@@ -47,7 +45,7 @@ public class Client {
 	private MulticastSocket multicast;
 	private InetAddress group;
 	private MulticastReceiver mc_receiver;
-	private List<String> scores;
+	private ConcurrentLinkedQueue<String> scores;
 
 	public Client() {
 		try {
@@ -95,7 +93,7 @@ public class Client {
 			multicast = new MulticastSocket(MULTICAST_PORT);
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
 
-			scores = Collections.synchronizedList(new LinkedList<String>());
+			scores = new ConcurrentLinkedQueue<String>();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {

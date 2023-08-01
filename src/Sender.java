@@ -20,7 +20,7 @@ public class Sender implements Runnable {
 	private Selector selector;
 	private SocketChannel socket;
 	private ByteBuffer buffer;
-	private AtomicInteger ACTIVE_CONNECTIONS;
+	private volatile AtomicInteger ACTIVE_CONNECTIONS;
 
 	// RMI notifiers
 	private List<Notify> notifiers;
@@ -66,10 +66,10 @@ public class Sender implements Runnable {
 		try {
 			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
 			multicast.send(packet);
-
-			System.out.println("< client has left: " +
-					ACTIVE_CONNECTIONS.decrementAndGet() + " connections");
-			selector.wakeup();
+			synchronized (ACTIVE_CONNECTIONS) {
+				System.out.println("< client has left: " +
+						ACTIVE_CONNECTIONS.decrementAndGet() + " connections");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -77,9 +77,9 @@ public class Sender implements Runnable {
 
 	public void run() {
 		try {
+			buffer.flip();
 			byte[] bytes = buffer.array();
 			int length = buffer.limit();
-			buffer.flip();
 			while (buffer.hasRemaining())
 				socket.write(buffer);
 

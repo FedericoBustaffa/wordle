@@ -9,7 +9,7 @@ public class Attachment {
 
 	private ByteBuffer buffer;
 	private Set<User> users;
-	private AtomicInteger ACTIVE_CONNECTIONS;
+	private volatile AtomicInteger ACTIVE_CONNECTIONS;
 	private List<Notify> notifiers;
 	private MulticastSocket multicast;
 	private SocketAddress group;

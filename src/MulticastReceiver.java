@@ -1,16 +1,16 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MulticastReceiver extends Thread {
 
 	private MulticastSocket multicast;
-	private List<String> scores;
+	private ConcurrentLinkedQueue<String> scores;
 	private String username;
 
-	public MulticastReceiver(MulticastSocket multicast,
-			List<String> scores, String username) {
+	public MulticastReceiver(MulticastSocket multicast, ConcurrentLinkedQueue<String> scores,
+			String username) {
 		this.multicast = multicast;
 		this.scores = scores;
 		this.username = username;

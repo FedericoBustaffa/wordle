@@ -83,16 +83,18 @@ public class Receiver implements Runnable {
 			return;
 		} else {
 			int score = new Random().nextInt(10);
-			Iterator<User> it = users.iterator();
-			User user;
-			while (it.hasNext()) {
-				user = it.next();
-				if (username.equals(user.getUsername())) {
-					it.remove();
-					user.setScore(score);
-					users.add(user);
-					buffer.put(("play: " + username + " " + score).getBytes());
-					return;
+			synchronized (users) {
+				Iterator<User> it = users.iterator();
+				User user;
+				while (it.hasNext()) {
+					user = it.next();
+					if (username.equals(user.getUsername())) {
+						it.remove();
+						user.setScore(score);
+						users.add(user);
+						buffer.put(("play: " + username + " " + score).getBytes());
+						return;
+					}
 				}
 			}
 		}

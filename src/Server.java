@@ -50,7 +50,7 @@ public class Server {
 	private List<Notify> notifiers;
 
 	// TCP
-	private AtomicInteger ACTIVE_CONNECTIONS;
+	private volatile AtomicInteger ACTIVE_CONNECTIONS;
 	private SocketAddress tcp_service;
 	private Selector selector;
 	private ExecutorService pool;
@@ -138,15 +138,17 @@ public class Server {
 
 	private void accept(SelectionKey key) {
 		try {
-			ServerSocketChannel server = (ServerSocketChannel) key.channel();
-			SocketChannel socket = server.accept();
-			socket.configureBlocking(false);
-			System.out.println("< new client connected: " +
-					ACTIVE_CONNECTIONS.incrementAndGet() + " clients connected");
-			ByteBuffer buffer = ByteBuffer.allocate(512);
-			Attachment attachment = new Attachment(buffer, users, ACTIVE_CONNECTIONS,
-					notifiers, multicast, group);
-			socket.register(selector, SelectionKey.OP_READ, attachment);
+			synchronized (ACTIVE_CONNECTIONS) {
+				ServerSocketChannel server = (ServerSocketChannel) key.channel();
+				SocketChannel socket = server.accept();
+				socket.configureBlocking(false);
+				System.out.println("< new client connected: " +
+						ACTIVE_CONNECTIONS.incrementAndGet() + " clients connected");
+				ByteBuffer buffer = ByteBuffer.allocate(512);
+				Attachment attachment = new Attachment(buffer, users, ACTIVE_CONNECTIONS,
+						notifiers, multicast, group);
+				socket.register(selector, SelectionKey.OP_READ, attachment);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -154,8 +156,9 @@ public class Server {
 
 	public void multiplex() {
 		try {
-			System.out.println("- - - - - - - -");
-			System.out.println("< channels ready: " + selector.select());
+			// System.out.println("- - - - - - - -");
+			// System.out.println("< channels ready: " + selector.select(5000L));
+			selector.select();
 			Set<SelectionKey> readyKeys = selector.selectedKeys();
 			Iterator<SelectionKey> it = readyKeys.iterator();
 			SelectionKey key;
@@ -164,14 +167,14 @@ public class Server {
 				it.remove();
 				if (key.isValid()) {
 					if (key.isAcceptable()) {
-						System.out.println("< ACCEPT");
+						// System.out.println("< ACCEPT");
 						this.accept(key);
 					} else if (key.isWritable()) {
-						System.out.println("< WRITE");
+						// System.out.println("< WRITE");
 						key.interestOps(0);
 						pool.execute(new Sender(key));
 					} else if (key.isReadable()) {
-						System.out.println("< READ");
+						// System.out.println("< READ");
 						key.interestOps(0);
 						pool.execute(new Receiver(key));
 					}
@@ -182,7 +185,7 @@ public class Server {
 		}
 	}
 
-	public int getActiveConnections() {
+	public synchronized int getActiveConnections() {
 		return ACTIVE_CONNECTIONS.get();
 	}
 

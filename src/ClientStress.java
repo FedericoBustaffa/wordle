@@ -13,10 +13,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ClientStress {
 
@@ -45,7 +43,7 @@ public class ClientStress {
 	private MulticastSocket multicast;
 	private InetAddress group;
 	private MulticastReceiver mc_receiver;
-	private List<String> scores;
+	private ConcurrentLinkedQueue<String> scores;
 
 	public ClientStress() {
 		try {
@@ -91,7 +89,7 @@ public class ClientStress {
 			multicast = new MulticastSocket(MULTICAST_PORT);
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
 
-			scores = Collections.synchronizedList(new LinkedList<String>());
+			scores = new ConcurrentLinkedQueue<String>();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
@@ -184,15 +182,17 @@ public class ClientStress {
 	}
 
 	private void showMeSharing() {
-		if (scores.size() == 0) {
-			System.out.println("< there are no notifications");
-			return;
-		}
+		synchronized (scores) {
+			if (scores.size() == 0) {
+				System.out.println("< there are no notifications");
+				return;
+			}
 
-		System.out.println("---- SCORES ----");
-		for (String s : scores)
-			System.out.println("< " + s);
-		System.out.println("----------------");
+			System.out.println("---- SCORES ----");
+			for (String s : scores)
+				System.out.println("< " + s);
+			System.out.println("----------------");
+		}
 	}
 
 	private void logout(String cmd) {
@@ -222,7 +222,7 @@ public class ClientStress {
 		}
 	}
 
-	private void exit(String cmd) {
+	public void exit(String cmd) {
 		try {
 			this.send(cmd + " " + username);
 			String response = this.receive();
@@ -246,16 +246,14 @@ public class ClientStress {
 
 	public void shell(String username, String password) {
 		try {
-			this.connect();
 			this.login("login " + username + " " + password);
-			for (int i = 0; i < 200; i++) {
-				Thread.sleep(200L);
+			for (int i = 0; i < 1000; i++) {
+				Thread.sleep(10L);
 				this.play("play");
 				this.share("share");
 				this.showMeSharing();
 			}
 			this.logout("logout");
-			this.exit("exit");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -276,7 +274,10 @@ public class ClientStress {
 
 	public static void main(String[] args) {
 		ClientStress client = new ClientStress();
+		client.connect();
 		client.shell(args[0], args[1]);
+		client.shell(args[2], args[3]);
+		client.exit("exit");
 		client.shutdown();
 	}
 
