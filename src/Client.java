@@ -197,10 +197,10 @@ public class Client {
 			return;
 		}
 
-		System.out.println("---- SCORES ----");
+		System.out.println("< ---- SCORES ----");
 		for (String s : scores)
 			System.out.println("< " + s);
-		System.out.println("----------------");
+		System.out.println("< ----------------");
 	}
 
 	private void logout(String cmd) {

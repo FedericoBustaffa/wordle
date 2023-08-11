@@ -32,6 +32,7 @@ public class Server {
 
 	// Wordle
 	Wordle wordle;
+	Thread extractor;
 
 	// JSON
 	private JsonWrapper json_wrapper;
@@ -101,6 +102,8 @@ public class Server {
 
 			// Wordle init
 			wordle = new Wordle(new File(WORDS));
+			extractor = new Thread(new Extractor(wordle));
+			extractor.start();
 
 			// RMI
 			notifiers = Collections.synchronizedList(new LinkedList<Notify>());
@@ -129,9 +132,7 @@ public class Server {
 			// multicast.joinGroup(group, null);
 			System.out.println("< MULTICAST address: " + MULTICAST_ADDRESS);
 			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
-		} catch (
-
-		IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -197,6 +198,10 @@ public class Server {
 
 			// JSON backup
 			json_wrapper.writeArray(users);
+
+			// wordle closure
+			extractor.interrupt();
+			extractor.join();
 
 			// RMI closure
 			registry.unbind(Registration.SERVICE);
