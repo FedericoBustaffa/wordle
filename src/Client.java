@@ -20,7 +20,6 @@ public class Client {
 
 	// UTILITY
 	private String username; // null if not logged
-	private int last_score;
 	private boolean done;
 	private Scanner input;
 
@@ -50,7 +49,6 @@ public class Client {
 	public Client() {
 		try {
 			username = null;
-			last_score = -1;
 			done = false;
 			input = new Scanner(System.in);
 
@@ -181,12 +179,16 @@ public class Client {
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
-		if (!response.contains("ERROR"))
-			last_score = Integer.parseInt(response.split(" ")[2]);
+	}
+
+	private void guess(String cmd) {
+		this.send(cmd + " " + username);
+		String response = this.receive();
+		System.out.println("< " + response);
 	}
 
 	private void share(String cmd) {
-		this.send(cmd + " " + username + " " + last_score);
+		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
 	}
@@ -271,6 +273,8 @@ public class Client {
 				this.logout(cmd);
 			else if (first.equals("play"))
 				this.play(cmd);
+			else if (first.equals("guess"))
+				this.guess(cmd);
 			else if (first.equals("share"))
 				this.share(cmd);
 			else if (first.equals("show"))

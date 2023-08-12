@@ -103,7 +103,6 @@ public class Server {
 			// Wordle init
 			wordle = new Wordle(new File(WORDS));
 			extractor = new Thread(new Extractor(wordle));
-			extractor.start();
 
 			// RMI
 			notifiers = Collections.synchronizedList(new LinkedList<Notify>());
@@ -132,6 +131,9 @@ public class Server {
 			// multicast.joinGroup(group, null);
 			System.out.println("< MULTICAST address: " + MULTICAST_ADDRESS);
 			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
+
+			// words extractor thread start
+			extractor.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -147,7 +149,7 @@ public class Server {
 						ACTIVE_CONNECTIONS.incrementAndGet() + " clients connected");
 				ByteBuffer buffer = ByteBuffer.allocate(512);
 				Attachment attachment = new Attachment(buffer, users, ACTIVE_CONNECTIONS,
-						notifiers, multicast, group);
+						notifiers, multicast, group, wordle);
 				socket.register(selector, SelectionKey.OP_READ, attachment);
 			}
 		} catch (IOException e) {

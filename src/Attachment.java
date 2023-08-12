@@ -13,15 +13,18 @@ public class Attachment {
 	private List<Notify> notifiers;
 	private MulticastSocket multicast;
 	private SocketAddress group;
+	private Wordle wordle;
 
 	public Attachment(ByteBuffer buffer, Set<User> users, AtomicInteger ACTIVE_CONNECTIONS,
-			List<Notify> notifiers, MulticastSocket multicast, SocketAddress group) {
+			List<Notify> notifiers, MulticastSocket multicast, SocketAddress group,
+			Wordle wordle) {
 		this.buffer = buffer;
 		this.users = users;
 		this.ACTIVE_CONNECTIONS = ACTIVE_CONNECTIONS;
 		this.notifiers = notifiers;
 		this.multicast = multicast;
 		this.group = group;
+		this.wordle = wordle;
 	}
 
 	public ByteBuffer getBuffer() {
@@ -47,4 +50,9 @@ public class Attachment {
 	public SocketAddress getGroup() {
 		return group;
 	}
+
+	public Wordle getWordle() {
+		return wordle;
+	}
+
 }

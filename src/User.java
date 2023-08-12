@@ -49,8 +49,8 @@ public class User implements Comparable<User>, Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("username: " + username + "\n");
-		builder.append("score: " + score);
+		builder.append("username: " + username);
+		// builder.append("score: " + score);
 
 		return builder.toString();
 	}

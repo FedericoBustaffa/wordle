@@ -4,7 +4,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.Set;
 
 public class Receiver implements Runnable {
@@ -16,6 +15,7 @@ public class Receiver implements Runnable {
 	private ByteBuffer buffer;
 
 	private Set<User> users;
+	private Wordle wordle;
 
 	public Receiver(SelectionKey key) {
 		this.key = key;
@@ -24,6 +24,7 @@ public class Receiver implements Runnable {
 		this.socket = (SocketChannel) key.channel();
 		this.buffer = attachment.getBuffer();
 		this.users = attachment.getUsers();
+		this.wordle = attachment.getWordle();
 	}
 
 	private void help(String[] cmd) {
@@ -82,22 +83,30 @@ public class Receiver implements Runnable {
 			buffer.put("ERROR: login to play".getBytes());
 			return;
 		} else {
-			int score = new Random().nextInt(10);
 			synchronized (users) {
 				Iterator<User> it = users.iterator();
 				User user;
 				while (it.hasNext()) {
 					user = it.next();
 					if (username.equals(user.getUsername())) {
-						it.remove();
-						user.setScore(score);
-						users.add(user);
-						buffer.put(("play: " + username + " " + score).getBytes());
+						if (wordle.startSession(user)) {
+							System.out.println("< " + wordle.getSessions());
+							buffer.put("game started".getBytes());
+						} else
+							buffer.put("you have to finish a game before".getBytes());
 						return;
 					}
 				}
 			}
 		}
+	}
+
+	private void guess(String[] cmd) {
+		if (cmd.length != 3) {
+			buffer.put("ERROR USAGE: guess <guessed_word>".getBytes());
+			return;
+		}
+
 	}
 
 	private void share(String[] cmd) {
@@ -135,6 +144,8 @@ public class Receiver implements Runnable {
 			if (username.equals(u.getUsername())) {
 				if (u.isOnline()) {
 					u.offline();
+					wordle.endSession(u);
+					System.out.println("< " + wordle.getSessions());
 					buffer.put(("logout success: " + username).getBytes());
 					System.out.println("< " + username + " left");
 				} else {
@@ -155,6 +166,8 @@ public class Receiver implements Runnable {
 			for (User u : users) {
 				if (username.equals(u.getUsername())) {
 					u.offline();
+					wordle.endSession(u);
+					System.out.println("< " + wordle.getSessions());
 					buffer.put(("exit success " + username).getBytes());
 					System.out.println("< " + username + " left");
 					return;
@@ -180,6 +193,8 @@ public class Receiver implements Runnable {
 					login(cmd);
 				else if (first.equals("play"))
 					play(cmd);
+				else if (first.equals("guess"))
+					guess(cmd);
 				else if (first.equals("share"))
 					share(cmd);
 				else if (first.equals("logout"))

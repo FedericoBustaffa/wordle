@@ -9,8 +9,8 @@ public class Extractor implements Runnable {
 	public void run() {
 		try {
 			while (!Thread.currentThread().isInterrupted()) {
-				Thread.sleep(5000);
 				wordle.extractWord();
+				Thread.sleep(30000);
 			}
 		} catch (InterruptedException e) {
 			System.out.println("< extractor closure");
