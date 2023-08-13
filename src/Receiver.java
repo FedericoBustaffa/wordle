@@ -37,6 +37,7 @@ public class Receiver implements Runnable {
 				"< register <username> <password>\n" +
 				"< login <username> <password>\n" +
 				"< play\n" +
+				"< guess <word>\n" +
 				"< share\n" +
 				"< show\n" +
 				"< logout\n" +
@@ -103,10 +104,18 @@ public class Receiver implements Runnable {
 
 	private void guess(String[] cmd) {
 		if (cmd.length != 3) {
-			buffer.put("ERROR USAGE: guess <guessed_word>".getBytes());
+			buffer.put("ERROR USAGE: guess <word>".getBytes());
 			return;
 		}
 
+		String username = cmd[2];
+		if (username.equals("null")) {
+			buffer.put("ERROR: login to guess the word of the day".getBytes());
+			return;
+		}
+
+		String res = wordle.guess(cmd[1]);
+		buffer.put(res.getBytes());
 	}
 
 	private void share(String[] cmd) {

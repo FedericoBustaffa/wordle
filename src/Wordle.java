@@ -59,4 +59,12 @@ public class Wordle {
 			return true;
 	}
 
+	public String guess(String word) {
+		if (word.length() != 10)
+			return "ERROR: word length must be 10";
+		else {
+			return null;
+		}
+	}
+
 }

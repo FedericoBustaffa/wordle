@@ -44,6 +44,7 @@ public class Server {
 	private int TCP_PORT;
 	private String MULTICAST_ADDRESS;
 	private int MULTICAST_PORT;
+	private long EXTRACTION_TIMEOUT;
 
 	// RMI
 	private Registry registry;
@@ -86,6 +87,8 @@ public class Server {
 					MULTICAST_ADDRESS = line[1];
 				else if (line[0].equals("MULTICAST_PORT"))
 					MULTICAST_PORT = Integer.parseInt(line[1]);
+				else if (line[0].equals("EXTRACTION_TIMEOUT"))
+					EXTRACTION_TIMEOUT = Long.parseLong(line[1]);
 				else {
 					System.out.println("< ERROR: configuration file corrupted");
 					System.exit(1);
@@ -102,7 +105,7 @@ public class Server {
 
 			// Wordle init
 			wordle = new Wordle(new File(WORDS));
-			extractor = new Thread(new Extractor(wordle));
+			extractor = new Thread(new Extractor(wordle, EXTRACTION_TIMEOUT));
 
 			// RMI
 			notifiers = Collections.synchronizedList(new LinkedList<Notify>());
