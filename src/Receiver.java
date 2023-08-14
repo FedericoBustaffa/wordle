@@ -90,11 +90,11 @@ public class Receiver implements Runnable {
 				while (it.hasNext()) {
 					user = it.next();
 					if (username.equals(user.getUsername())) {
-						if (wordle.startSession(user)) {
+						if (wordle.startSession(username)) {
 							System.out.println("< " + wordle.getSessions());
 							buffer.put("game started".getBytes());
 						} else
-							buffer.put("you have to finish a game before".getBytes());
+							buffer.put("you have to finish the current game".getBytes());
 						return;
 					}
 				}
@@ -115,6 +115,8 @@ public class Receiver implements Runnable {
 		}
 
 		String res = wordle.guess(cmd[1]);
+		if (res.contains("right"))
+			wordle.endSession(username);
 		buffer.put(res.getBytes());
 	}
 
@@ -153,7 +155,7 @@ public class Receiver implements Runnable {
 			if (username.equals(u.getUsername())) {
 				if (u.isOnline()) {
 					u.offline();
-					wordle.endSession(u);
+					wordle.endSession(username);
 					System.out.println("< " + wordle.getSessions());
 					buffer.put(("logout success: " + username).getBytes());
 					System.out.println("< " + username + " left");
@@ -175,7 +177,7 @@ public class Receiver implements Runnable {
 			for (User u : users) {
 				if (username.equals(u.getUsername())) {
 					u.offline();
-					wordle.endSession(u);
+					wordle.endSession(username);
 					System.out.println("< " + wordle.getSessions());
 					buffer.put(("exit success " + username).getBytes());
 					System.out.println("< " + username + " left");

@@ -51,3 +51,48 @@ client.
 - **Login**
   - Il client richiede di effettuare il login fornendo
     `username` e `password`.
+
+## Sessioni di gioco
+
+Ogni utente per giocare deve prima fare richiesta di
+iniziare una nuova partita.
+
+Questa causa la creazione di una sessione di gioco che
+lega l'utente alla parola estratta in quel momento.
+
+### Interfaccia
+
+1. L'utente richiede di iniziare una sessione di gioco.
+2. Il server risponde con un messaggio che potrebbe
+   segnalare la creazione con successo della sessione o
+   un errore.
+
+### Casisitiche
+
+Quando si tenta di avviare una nuova sessione di gioco
+possono verificarsi varie casisitiche.
+
+In particolare, perché la sessione venga creata con
+successo è necessario che
+
+- L'utente abbia effettuato il login.
+- Non sia presente una sessione con la parola corrente
+  per lo stesso utente.
+- L'utente non abbia già giocato con la parola corrente.
+
+### Gestione delle sessioni lato server
+
+Il server gestisce le sessioni di gioco in base alle
+nuove parole estratte, alle richieste dei client e
+all'andamento delle varie partite.
+
+- Ogni volta che il thread `estrattore` estrae una
+  nuova parola, elimina le sessioni **finite** legate alla
+  parola precedente.
+- Se l'utente richiede di aprire una nuova sessione di
+  gioco quando ne ha già una in atto allora il server
+  invia un messaggio d'errore.
+- Non so ancora come gestire il logout in sessione
+  aperta.
+- Se l'utente indovina la parola la sessione viene
+  `segnata` come conclusa ma non viene ancora eliminata.

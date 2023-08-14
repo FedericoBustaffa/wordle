@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -11,7 +10,7 @@ public class Wordle {
 
 	String current_word;
 	List<String> words;
-	ConcurrentHashMap<User, String> sessions;
+	ConcurrentHashMap<String, Boolean> sessions;
 
 	public Wordle(File file) {
 		if (!file.exists()) {
@@ -29,10 +28,10 @@ public class Wordle {
 			e.printStackTrace();
 		}
 
-		sessions = new ConcurrentHashMap<User, String>();
+		sessions = new ConcurrentHashMap<String, Boolean>();
 	}
 
-	public ConcurrentHashMap<User, String> getSessions() {
+	public ConcurrentHashMap<String, Boolean> getSessions() {
 		return sessions;
 	}
 
@@ -42,29 +41,21 @@ public class Wordle {
 		System.out.println("< extracted word: " + current_word);
 	}
 
-	public boolean startSession(User user) {
-		List<User> keys = Collections.list(sessions.keys());
-		if (keys.contains(user)) {
-			return false;
-		} else {
-			sessions.put(user, current_word);
-			return true;
-		}
+	public boolean startSession(String username) {
+		return sessions.putIfAbsent(username, false) == null;
 	}
 
-	public boolean endSession(User user) {
-		if (sessions.remove(user) == null)
-			return false;
-		else
-			return true;
+	public boolean endSession(String username) {
+		return sessions.remove(username) != null;
 	}
 
 	public String guess(String word) {
 		if (word.length() != 10)
 			return "ERROR: word length must be 10";
-		else {
-			return null;
-		}
+		else if (!word.equals(current_word))
+			return "wrong word, try again";
+		else
+			return "you guess right!";
 	}
 
 }
