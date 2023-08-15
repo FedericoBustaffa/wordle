@@ -94,7 +94,7 @@ public class Receiver implements Runnable {
 							System.out.println("< " + wordle.getSessions());
 							buffer.put("game started".getBytes());
 						} else
-							buffer.put("you have to finish the current game".getBytes());
+							buffer.put("you can't start a new game now".getBytes());
 						return;
 					}
 				}
@@ -115,8 +115,10 @@ public class Receiver implements Runnable {
 		}
 
 		String res = wordle.guess(cmd[1]);
-		if (res.contains("right"))
+		if (res.contains("right")) {
 			wordle.endSession(username);
+			System.out.println(wordle.getSessions());
+		}
 		buffer.put(res.getBytes());
 	}
 

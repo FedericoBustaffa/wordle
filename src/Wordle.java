@@ -1,10 +1,12 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Iterator;
 
 public class Wordle {
 
@@ -36,6 +38,13 @@ public class Wordle {
 	}
 
 	public void extractWord() {
+		List<String> keys = Collections.list(sessions.keys());
+		Iterator<String> it = keys.iterator();
+		while (it.hasNext()) {
+			if (sessions.get(it.next()) == true)
+				it.remove();
+		}
+
 		Random random = new Random();
 		this.current_word = words.remove(random.nextInt(words.size()));
 		System.out.println("< extracted word: " + current_word);
@@ -46,7 +55,7 @@ public class Wordle {
 	}
 
 	public boolean endSession(String username) {
-		return sessions.remove(username) != null;
+		return sessions.put(username, true) != null;
 	}
 
 	public String guess(String word) {
