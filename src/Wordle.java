@@ -55,11 +55,11 @@ public class Wordle {
 	}
 
 	public boolean startSession(String username) {
-		return sessions.putIfAbsent(username, this.current_word) == null;
+		return sessions.put(username, this.current_word) == null;
 	}
 
 	public boolean endSession(String username) {
-		return sessions.put(username, null) != null;
+		return sessions.put(username, "") != null;
 	}
 
 	public String guess(String username, String word) {
