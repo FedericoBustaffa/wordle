@@ -73,7 +73,7 @@ Quando si tenta di avviare una nuova sessione di gioco
 possono verificarsi varie casisitiche.
 
 In particolare, perché la sessione venga creata con
-successo è necessario che
+successo, è necessario che
 
 - L'utente abbia effettuato il login.
 - Non sia presente una sessione con la parola corrente
