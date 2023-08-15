@@ -114,12 +114,13 @@ public class Receiver implements Runnable {
 			return;
 		}
 
-		String res = wordle.guess(cmd[1]);
-		if (res.contains("right")) {
+		String word = cmd[1];
+		String guess_result = wordle.guess(username, word);
+		if (guess_result.contains("right")) {
 			wordle.endSession(username);
-			System.out.println(wordle.getSessions());
+			System.out.println("< " + wordle.getSessions());
 		}
-		buffer.put(res.getBytes());
+		buffer.put(guess_result.getBytes());
 	}
 
 	private void share(String[] cmd) {

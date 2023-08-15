@@ -12,7 +12,7 @@ public class Wordle {
 
 	String current_word;
 	List<String> words;
-	ConcurrentHashMap<String, Boolean> sessions;
+	ConcurrentHashMap<String, String> sessions;
 
 	public Wordle(File file) {
 		if (!file.exists()) {
@@ -30,19 +30,23 @@ public class Wordle {
 			e.printStackTrace();
 		}
 
-		sessions = new ConcurrentHashMap<String, Boolean>();
+		sessions = new ConcurrentHashMap<String, String>();
 	}
 
-	public ConcurrentHashMap<String, Boolean> getSessions() {
+	public ConcurrentHashMap<String, String> getSessions() {
 		return sessions;
 	}
 
 	public void extractWord() {
 		List<String> keys = Collections.list(sessions.keys());
 		Iterator<String> it = keys.iterator();
+		String username;
 		while (it.hasNext()) {
-			if (sessions.get(it.next()) == true)
-				it.remove();
+			username = it.next();
+			if (sessions.get(username) != null) {
+				sessions.remove(username);
+				System.out.println("< " + sessions);
+			}
 		}
 
 		Random random = new Random();
@@ -51,17 +55,22 @@ public class Wordle {
 	}
 
 	public boolean startSession(String username) {
-		return sessions.putIfAbsent(username, false) == null;
+		return sessions.putIfAbsent(username, this.current_word) == null;
 	}
 
 	public boolean endSession(String username) {
-		return sessions.put(username, true) != null;
+		return sessions.put(username, null) != null;
 	}
 
-	public String guess(String word) {
-		if (word.length() != 10)
+	public String guess(String username, String word) {
+		String session_word = sessions.get(username);
+		if (!sessions.containsKey(username))
+			return "ERROR: you have to start a new game before";
+		else if (sessions.containsKey(username) && session_word == null)
+			return "ERROR: your session is closed";
+		else if (word.length() != 10)
 			return "ERROR: word length must be 10";
-		else if (!word.equals(current_word))
+		else if (!word.equals(session_word))
 			return "wrong word, try again";
 		else
 			return "you guess right!";
