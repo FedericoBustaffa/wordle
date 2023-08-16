@@ -11,6 +11,7 @@ public class Extractor implements Runnable {
 	public void run() {
 		try {
 			while (!Thread.currentThread().isInterrupted()) {
+				wordle.clear();
 				wordle.extractWord();
 				Thread.sleep(timeout);
 			}
