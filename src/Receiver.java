@@ -118,8 +118,8 @@ public class Receiver implements Runnable {
 		String guess_result = wordle.guess(username, word);
 		if (guess_result.contains("right")) {
 			wordle.endSession(username);
-			System.out.println("< " + wordle.getSessions());
 		}
+		System.out.println("< " + wordle.getSessions());
 		buffer.put(guess_result.getBytes());
 	}
 
@@ -159,7 +159,7 @@ public class Receiver implements Runnable {
 				if (u.isOnline()) {
 					u.offline();
 					wordle.endSession(username);
-					System.out.println("< " + wordle.getSessions());
+					// System.out.println("< " + wordle.getSessions());
 					buffer.put(("logout success: " + username).getBytes());
 					System.out.println("< " + username + " left");
 				} else {
@@ -181,7 +181,7 @@ public class Receiver implements Runnable {
 				if (username.equals(u.getUsername())) {
 					u.offline();
 					wordle.endSession(username);
-					System.out.println("< " + wordle.getSessions());
+					// System.out.println("< " + wordle.getSessions());
 					buffer.put(("exit success " + username).getBytes());
 					System.out.println("< " + username + " left");
 					return;

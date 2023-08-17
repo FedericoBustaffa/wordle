@@ -13,6 +13,7 @@ public class Wordle {
 	String current_word;
 	List<String> words;
 	ConcurrentHashMap<String, String> sessions;
+	Random random;
 
 	public Wordle(File file) {
 		if (!file.exists()) {
@@ -31,6 +32,7 @@ public class Wordle {
 		}
 
 		sessions = new ConcurrentHashMap<String, String>();
+		random = new Random();
 	}
 
 	public ConcurrentHashMap<String, String> getSessions() {
@@ -38,17 +40,22 @@ public class Wordle {
 	}
 
 	public void extractWord() {
-		Random random = new Random();
-		this.current_word = words.remove(random.nextInt(words.size()));
+		current_word = words.remove(random.nextInt(words.size()));
 		System.out.println("< extracted word: " + current_word);
 	}
 
 	public boolean startSession(String username) {
-		return sessions.put(username, this.current_word) == null;
+		return sessions.put(username, current_word) == null;
 	}
 
-	public boolean endSession(String username) {
-		return sessions.put(username, "") != null;
+	public void endSession(String username) {
+		String session_word = sessions.get(username);
+		if (session_word == null)
+			return;
+		if (session_word.equals(current_word))
+			sessions.put(username, "");
+		else
+			sessions.remove(username);
 	}
 
 	public void clear() {
@@ -57,7 +64,7 @@ public class Wordle {
 		String username;
 		while (it.hasNext()) {
 			username = it.next();
-			System.out.println("< " + sessions.get(username).equals(""));
+			// System.out.println("< " + sessions.get(username).equals(""));
 			if (sessions.get(username).equals("")) {
 				sessions.remove(username);
 				System.out.println("< " + sessions);
@@ -67,21 +74,17 @@ public class Wordle {
 
 	public String guess(String username, String word) {
 		String session_word = sessions.get(username);
+		// System.out.println("< GUESS: " + word + " : " + session_word);
 		if (!sessions.containsKey(username))
 			return "ERROR: you have to start a new game before";
-		else if (sessions.containsKey(username) && session_word.equals(""))
+		else if (session_word.equals(""))
 			return "ERROR: your session is closed";
 		else if (word.length() != 10)
 			return "ERROR: word length must be 10";
 		else if (!word.equals(session_word))
 			return "wrong word, try again";
-		else {
-			if (!session_word.equals(current_word)) {
-				sessions.remove(username);
-				System.out.println("< " + sessions);
-			}
+		else
 			return "you guess right!";
-		}
 	}
 
 }
