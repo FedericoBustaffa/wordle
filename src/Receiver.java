@@ -158,8 +158,6 @@ public class Receiver implements Runnable {
 			if (username.equals(u.getUsername())) {
 				if (u.isOnline()) {
 					u.offline();
-					wordle.endSession(username);
-					// System.out.println("< " + wordle.getSessions());
 					buffer.put(("logout success: " + username).getBytes());
 					System.out.println("< " + username + " left");
 				} else {
@@ -180,8 +178,6 @@ public class Receiver implements Runnable {
 			for (User u : users) {
 				if (username.equals(u.getUsername())) {
 					u.offline();
-					wordle.endSession(username);
-					// System.out.println("< " + wordle.getSessions());
 					buffer.put(("exit success " + username).getBytes());
 					System.out.println("< " + username + " left");
 					return;

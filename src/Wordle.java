@@ -45,7 +45,13 @@ public class Wordle {
 	}
 
 	public boolean startSession(String username) {
-		return sessions.put(username, current_word) == null;
+		String session_word = sessions.get(username);
+		if (session_word != null)
+			return false;
+		else {
+			sessions.put(username, current_word);
+			return true;
+		}
 	}
 
 	public void endSession(String username) {
