@@ -2,35 +2,70 @@
   "username" : "andrea",
   "password" : "4ndr34",
   "score" : 0,
+  "games" : 0,
+  "wins" : 0.0,
+  "lastStreak" : 0,
+  "maxStreak" : 0,
+  "guessDistribution" : 0.0,
   "online" : false
 }, {
   "username" : "chiara",
   "password" : "ch14r4",
   "score" : 0,
+  "games" : 0,
+  "wins" : 0.0,
+  "lastStreak" : 0,
+  "maxStreak" : 0,
+  "guessDistribution" : 0.0,
   "online" : false
 }, {
   "username" : "marghi",
   "password" : "m4rgh1",
   "score" : 0,
+  "games" : 0,
+  "wins" : 0.0,
+  "lastStreak" : 0,
+  "maxStreak" : 0,
+  "guessDistribution" : 0.0,
   "online" : false
 }, {
   "username" : "sara",
   "password" : "s4r4",
   "score" : 0,
+  "games" : 0,
+  "wins" : 0.0,
+  "lastStreak" : 0,
+  "maxStreak" : 0,
+  "guessDistribution" : 0.0,
   "online" : false
 }, {
   "username" : "ciccio",
   "password" : "c1cc10",
   "score" : 0,
+  "games" : 0,
+  "wins" : 0.0,
+  "lastStreak" : 0,
+  "maxStreak" : 0,
+  "guessDistribution" : 0.0,
   "online" : false
 }, {
   "username" : "betta",
   "password" : "b3tt4",
   "score" : 0,
+  "games" : 0,
+  "wins" : 0.0,
+  "lastStreak" : 0,
+  "maxStreak" : 0,
+  "guessDistribution" : 0.0,
   "online" : false
 }, {
   "username" : "fede",
   "password" : "f3d3",
   "score" : 9,
+  "games" : 0,
+  "wins" : 0.0,
+  "lastStreak" : 0,
+  "maxStreak" : 0,
+  "guessDistribution" : 0.0,
   "online" : false
 } ]

@@ -7,9 +7,9 @@ public class User implements Comparable<User>, Serializable {
 	private int score;
 	private int games;
 	private double wins;
-	private int last_streak;
-	private int max_streak;
-	private double guess_distribution;
+	private int lastStreak;
+	private int maxStreak;
+	private double guessDistribution;
 	private boolean online;
 
 	public User(String username, String password) {
@@ -18,9 +18,9 @@ public class User implements Comparable<User>, Serializable {
 		this.score = 0;
 		this.games = 0;
 		this.wins = 0.0;
-		this.last_streak = 0;
-		this.max_streak = 0;
-		this.guess_distribution = 0.0;
+		this.lastStreak = 0;
+		this.maxStreak = 0;
+		this.guessDistribution = 0.0;
 		this.online = false;
 	}
 
@@ -61,23 +61,23 @@ public class User implements Comparable<User>, Serializable {
 	}
 
 	public int getLastStreak() {
-		return last_streak;
+		return lastStreak;
 	}
 
 	public void incLastStreak() {
-		last_streak++;
+		lastStreak++;
 	}
 
 	public int getMaxStreak() {
-		return max_streak;
+		return maxStreak;
 	}
 
 	public void incMaxStreak() {
-		max_streak++;
+		maxStreak++;
 	}
 
 	public double getGuessDistribution() {
-		return guess_distribution;
+		return guessDistribution;
 	}
 
 	public void updateGuessDistribution() {

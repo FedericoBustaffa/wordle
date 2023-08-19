@@ -102,11 +102,18 @@ public class Wordle {
 			return "ERROR: your session is closed";
 		else if (word.length() != 10)
 			return "ERROR: word length must be 10";
-		else if (!word.equals(session.getWord())) {
+		else if (session.getAttempts() >= 2) {
+			return "ERROR: attempts terminated";
+		} else if (!word.equals(session.getWord())) {
+			String msg = hints(word, session.getWord());
 			session.increaseAttempts();
-			return hints(word, session.getWord());
+			if (session.getAttempts() >= 2)
+				session.close();
+			return msg;
 		} else {
 			session.increaseAttempts();
+			if (session.getAttempts() >= 2)
+				session.close();
 			return "you guess right!";
 		}
 	}
