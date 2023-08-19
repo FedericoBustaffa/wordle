@@ -119,7 +119,7 @@ public class Receiver implements Runnable {
 		if (guess_result.contains("right")) {
 			wordle.endSession(username);
 		}
-		System.out.println("< " + wordle.getSessions());
+		// System.out.println("< " + wordle.getSessions());
 		buffer.put(guess_result.getBytes());
 	}
 

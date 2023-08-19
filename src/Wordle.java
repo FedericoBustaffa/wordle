@@ -1,11 +1,11 @@
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
 import java.util.Iterator;
 
 public class Wordle {
@@ -78,6 +78,21 @@ public class Wordle {
 		}
 	}
 
+	private String hints(String word, String session_word) {
+		StringBuilder builder = new StringBuilder(word);
+		builder.append("\n< ");
+		for (int i = 0; i < 10; i++) {
+			if (word.charAt(i) == session_word.charAt(i))
+				builder.append("+");
+			else if (session_word.contains(word.substring(i, i + 1)))
+				builder.append("?");
+			else
+				builder.append("x");
+		}
+
+		return builder.toString();
+	}
+
 	public String guess(String username, String word) {
 		String session_word = sessions.get(username);
 		// System.out.println("< GUESS: " + word + " : " + session_word);
@@ -88,7 +103,7 @@ public class Wordle {
 		else if (word.length() != 10)
 			return "ERROR: word length must be 10";
 		else if (!word.equals(session_word))
-			return "wrong word, try again";
+			return hints(word, session_word);
 		else
 			return "you guess right!";
 	}
