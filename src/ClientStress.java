@@ -171,8 +171,6 @@ public class ClientStress {
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
-		if (!response.contains("ERROR"))
-			last_score = Integer.parseInt(response.split(" ")[2]);
 	}
 
 	private void share(String cmd) {

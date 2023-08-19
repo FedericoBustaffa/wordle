@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -32,13 +31,13 @@ public class JsonWrapper {
         }
     }
 
-    public void writeArray(Set<User> users) {
+    public void writeArray(ConcurrentHashMap<String, User> users) {
         try {
             generator = factory.createGenerator(file, JsonEncoding.UTF8);
             generator.setCodec(mapper);
             generator.useDefaultPrettyPrinter();
             generator.writeStartArray();
-            for (User u : users) {
+            for (User u : users.values()) {
                 generator.writeObject(u);
             }
             generator.writeEndArray();
@@ -48,9 +47,9 @@ public class JsonWrapper {
         }
     }
 
-    public Set<User> readArray() {
+    public ConcurrentHashMap<String, User> readArray() {
         try {
-            Set<User> users = new TreeSet<User>();
+            ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String, User>();
             parser = factory.createParser(file);
             parser.setCodec(mapper);
 
@@ -63,8 +62,11 @@ public class JsonWrapper {
             if (token != JsonToken.START_ARRAY)
                 return null;
 
-            while (parser.nextToken() == JsonToken.START_OBJECT)
-                users.add(parser.readValueAs(User.class));
+            User user;
+            while (parser.nextToken() == JsonToken.START_OBJECT) {
+                user = parser.readValueAs(User.class);
+                users.put(user.getUsername(), user);
+            }
 
             parser.close();
 

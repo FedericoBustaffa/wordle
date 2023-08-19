@@ -12,7 +12,7 @@ public class Wordle {
 
 	String current_word;
 	List<String> words;
-	ConcurrentHashMap<String, String> sessions;
+	ConcurrentHashMap<String, Session> sessions;
 	Random random;
 
 	public Wordle(File file) {
@@ -31,11 +31,11 @@ public class Wordle {
 			e.printStackTrace();
 		}
 
-		sessions = new ConcurrentHashMap<String, String>();
+		sessions = new ConcurrentHashMap<String, Session>();
 		random = new Random();
 	}
 
-	public ConcurrentHashMap<String, String> getSessions() {
+	public ConcurrentHashMap<String, Session> getSessions() {
 		return sessions;
 	}
 
@@ -45,21 +45,21 @@ public class Wordle {
 	}
 
 	public boolean startSession(String username) {
-		String session_word = sessions.get(username);
-		if (session_word != null)
+		Session session = sessions.get(username);
+		if (session != null)
 			return false;
 		else {
-			sessions.put(username, current_word);
+			sessions.put(username, new Session(current_word));
 			return true;
 		}
 	}
 
 	public void endSession(String username) {
-		String session_word = sessions.get(username);
-		if (session_word == null)
+		Session session = sessions.get(username);
+		if (session == null)
 			return;
-		if (session_word.equals(current_word))
-			sessions.put(username, "");
+		else if (session.getWord().equals(current_word))
+			session.close();
 		else
 			sessions.remove(username);
 	}
@@ -71,7 +71,7 @@ public class Wordle {
 		while (it.hasNext()) {
 			username = it.next();
 			// System.out.println("< " + sessions.get(username).equals(""));
-			if (sessions.get(username).equals("")) {
+			if (sessions.get(username).getWord().equals("")) {
 				sessions.remove(username);
 				System.out.println("< " + sessions);
 			}
@@ -94,18 +94,21 @@ public class Wordle {
 	}
 
 	public String guess(String username, String word) {
-		String session_word = sessions.get(username);
+		Session session = sessions.get(username);
 		// System.out.println("< GUESS: " + word + " : " + session_word);
 		if (!sessions.containsKey(username))
 			return "ERROR: you have to start a new game before";
-		else if (session_word.equals(""))
+		else if (session.getWord().equals(""))
 			return "ERROR: your session is closed";
 		else if (word.length() != 10)
 			return "ERROR: word length must be 10";
-		else if (!word.equals(session_word))
-			return hints(word, session_word);
-		else
+		else if (!word.equals(session.getWord())) {
+			session.increaseAttempts();
+			return hints(word, session.getWord());
+		} else {
+			session.increaseAttempts();
 			return "you guess right!";
+		}
 	}
 
 }

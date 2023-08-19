@@ -4,7 +4,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Receiver implements Runnable {
 
@@ -14,7 +14,7 @@ public class Receiver implements Runnable {
 	private SocketChannel socket;
 	private ByteBuffer buffer;
 
-	private Set<User> users;
+	private ConcurrentHashMap<String, User> users;
 	private Wordle wordle;
 
 	public Receiver(SelectionKey key) {
@@ -54,7 +54,7 @@ public class Receiver implements Runnable {
 
 		String username = cmd[1];
 		String password = cmd[2];
-		for (User u : users) {
+		for (User u : users.values()) {
 			if (username.equals(u.getUsername())) {
 				if (password.equals(u.getPassword())) {
 					if (!u.isOnline()) {
@@ -85,7 +85,7 @@ public class Receiver implements Runnable {
 			return;
 		} else {
 			synchronized (users) {
-				Iterator<User> it = users.iterator();
+				Iterator<User> it = users.values().iterator();
 				User user;
 				while (it.hasNext()) {
 					user = it.next();
@@ -119,8 +119,8 @@ public class Receiver implements Runnable {
 		if (guess_result.contains("right")) {
 			wordle.endSession(username);
 		}
-		// System.out.println("< " + wordle.getSessions());
-		buffer.put(guess_result.getBytes());
+		System.out.println("< " + wordle.getSessions());
+		buffer.put((guess_result).getBytes());
 	}
 
 	private void share(String[] cmd) {
@@ -154,7 +154,7 @@ public class Receiver implements Runnable {
 			return;
 		}
 
-		for (User u : users) {
+		for (User u : users.values()) {
 			if (username.equals(u.getUsername())) {
 				if (u.isOnline()) {
 					u.offline();
@@ -175,7 +175,7 @@ public class Receiver implements Runnable {
 			return;
 		} else if (!cmd[1].equals("null")) {
 			String username = cmd[1];
-			for (User u : users) {
+			for (User u : users.values()) {
 				if (username.equals(u.getUsername())) {
 					u.offline();
 					buffer.put(("exit success " + username).getBytes());

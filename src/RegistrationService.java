@@ -1,14 +1,15 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RegistrationService extends UnicastRemoteObject implements Registration {
 
-	private Set<User> users;
+	private ConcurrentHashMap<String, User> users;
 	private List<Notify> notify_services;
 
-	public RegistrationService(Set<User> users, List<Notify> notify_services) throws RemoteException {
+	public RegistrationService(ConcurrentHashMap<String, User> users, List<Notify> notify_services)
+			throws RemoteException {
 		this.users = users;
 		this.notify_services = notify_services;
 	}
@@ -21,7 +22,7 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 			return "< invalid password";
 		}
 
-		if (!users.add(new User(username, password))) {
+		if (users.put(username, new User(username, password)) != null) {
 			return "< username \"" + username + "\" not available";
 		} else {
 			System.out.println("< new user: " + username + " has been registered");

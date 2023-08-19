@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,8 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Server {
 
 	// Tree Set of Users
-	private Set<User> users;
-	// private Set<User> playing_users; // giocatori online
+	private ConcurrentHashMap<String, User> users;
 
 	// Wordle
 	Wordle wordle;
@@ -101,7 +101,7 @@ public class Server {
 
 			// Json wrapper for backup
 			json_wrapper = new JsonWrapper(BACKUP_USERS);
-			users = Collections.synchronizedSet(json_wrapper.readArray());
+			users = json_wrapper.readArray();
 
 			// Wordle init
 			wordle = new Wordle(new File(WORDS));

@@ -12,6 +12,10 @@ public class Session {
 		return this.word;
 	}
 
+	public void close() {
+		this.word = "";
+	}
+
 	public int getAttempts() {
 		return this.attempts;
 	}
@@ -20,4 +24,11 @@ public class Session {
 		this.attempts++;
 	}
 
+	@Override
+	public String toString() {
+		if (this.word.equals(""))
+			return Integer.toString(attempts);
+		else
+			return this.word + ", " + this.attempts;
+	}
 }

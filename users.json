@@ -1,7 +1,7 @@
 [ {
-  "username" : "fede",
-  "password" : "f3d3",
-  "score" : 9,
+  "username" : "andrea",
+  "password" : "4ndr34",
+  "score" : 0,
   "online" : false
 }, {
   "username" : "chiara",
@@ -9,9 +9,9 @@
   "score" : 7,
   "online" : false
 }, {
-  "username" : "ciccio",
-  "password" : "c1cc10",
-  "score" : 5,
+  "username" : "marghi",
+  "password" : "m4rgh1",
+  "score" : 2,
   "online" : false
 }, {
   "username" : "sara",
@@ -19,9 +19,9 @@
   "score" : 3,
   "online" : false
 }, {
-  "username" : "marghi",
-  "password" : "m4rgh1",
-  "score" : 2,
+  "username" : "ciccio",
+  "password" : "c1cc10",
+  "score" : 5,
   "online" : false
 }, {
   "username" : "betta",
@@ -29,8 +29,8 @@
   "score" : 1,
   "online" : false
 }, {
-  "username" : "andrea",
-  "password" : "4ndr34",
-  "score" : 0,
+  "username" : "fede",
+  "password" : "f3d3",
+  "score" : 9,
   "online" : false
 } ]
