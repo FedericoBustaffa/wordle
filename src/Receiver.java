@@ -84,19 +84,17 @@ public class Receiver implements Runnable {
 			buffer.put("ERROR: login to play".getBytes());
 			return;
 		} else {
-			synchronized (users) {
-				Iterator<User> it = users.values().iterator();
-				User user;
-				while (it.hasNext()) {
-					user = it.next();
-					if (username.equals(user.getUsername())) {
-						if (wordle.startSession(username)) {
-							System.out.println("< " + wordle.getSessions());
-							buffer.put("game started".getBytes());
-						} else
-							buffer.put("you can't start a new game now".getBytes());
-						return;
-					}
+			Iterator<User> it = users.values().iterator();
+			User user;
+			while (it.hasNext()) {
+				user = it.next();
+				if (username.equals(user.getUsername())) {
+					if (wordle.startSession(username)) {
+						System.out.println("< " + wordle.getSessions());
+						buffer.put("game started".getBytes());
+					} else
+						buffer.put("you can't start a new game now".getBytes());
+					return;
 				}
 			}
 		}
@@ -117,6 +115,10 @@ public class Receiver implements Runnable {
 		String word = cmd[1];
 		String guess_result = wordle.guess(username, word);
 		if (guess_result.contains("right")) {
+			int attempts = wordle.getSessions().get(username).getAttempts();
+			User u = users.get(username);
+			u.updateScore(12 - attempts);
+			System.out.println(users.put(username, u));
 			wordle.endSession(username);
 		}
 		System.out.println("< " + wordle.getSessions());

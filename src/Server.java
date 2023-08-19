@@ -27,12 +27,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server {
 
-	// Tree Set of Users
+	// Hash Map of Users
 	private ConcurrentHashMap<String, User> users;
 
 	// Wordle
-	Wordle wordle;
-	Thread extractor;
+	private Wordle wordle;
+	private Thread extractor;
 
 	// JSON
 	private JsonWrapper json_wrapper;
