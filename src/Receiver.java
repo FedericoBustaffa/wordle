@@ -51,6 +51,10 @@ public class Receiver implements Runnable {
 			buffer.put("ERROR USAGE: login <username> <password>".getBytes());
 			return;
 		}
+		if (users == null) {
+			buffer.put("ERROR: register to login".getBytes());
+			return;
+		}
 
 		String username = cmd[1];
 		String password = cmd[2];
@@ -91,6 +95,7 @@ public class Receiver implements Runnable {
 				if (username.equals(user.getUsername())) {
 					if (wordle.startSession(username)) {
 						System.out.println("< " + wordle.getSessions());
+						user.incGames();
 						buffer.put("game started".getBytes());
 					} else
 						buffer.put("you can't start a new game now".getBytes());
@@ -117,11 +122,11 @@ public class Receiver implements Runnable {
 		if (guess_result.contains("right")) {
 			int attempts = wordle.getSessions().get(username).getAttempts();
 			User u = users.get(username);
+			u.incWins();
 			u.updateScore(12 - attempts);
-			System.out.println(users.put(username, u));
 			wordle.endSession(username);
 		}
-		System.out.println("< " + wordle.getSessions());
+		// System.out.println("< " + wordle.getSessions());
 		buffer.put((guess_result).getBytes());
 	}
 

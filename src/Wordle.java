@@ -98,23 +98,28 @@ public class Wordle {
 		// System.out.println("< GUESS: " + word + " : " + session_word);
 		if (!sessions.containsKey(username))
 			return "ERROR: you have to start a new game before";
+		else if (session.getAttempts() >= 2)
+			return "ERROR: attempts terminated";
 		else if (session.getWord().equals(""))
 			return "ERROR: your session is closed";
 		else if (word.length() != 10)
 			return "ERROR: word length must be 10";
-		else if (session.getAttempts() >= 2) {
-			return "ERROR: attempts terminated";
-		} else if (!word.equals(session.getWord())) {
-			String msg = hints(word, session.getWord());
+		else {
+			String msg;
+			if (!word.equals(session.getWord()))
+				msg = hints(word, session.getWord());
+			else
+				msg = "you guess right!";
+
 			session.increaseAttempts();
-			if (session.getAttempts() >= 2)
-				session.close();
+			if (session.getAttempts() >= 2) {
+				if (!session.getWord().equals(current_word))
+					sessions.remove(username);
+				else
+					session.close();
+			}
+
 			return msg;
-		} else {
-			session.increaseAttempts();
-			if (session.getAttempts() >= 2)
-				session.close();
-			return "you guess right!";
 		}
 	}
 

@@ -54,13 +54,9 @@ public class JsonWrapper {
             parser.setCodec(mapper);
 
             JsonToken token = parser.nextToken();
-            // file presente ma vuoto
-            if (token == JsonToken.VALUE_NULL)
-                return users;
-
-            // file malformato
+            // file malformato o vuoto
             if (token != JsonToken.START_ARRAY)
-                return null;
+                return users;
 
             User user;
             while (parser.nextToken() == JsonToken.START_OBJECT) {

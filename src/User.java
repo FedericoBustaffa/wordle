@@ -1,12 +1,14 @@
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class User implements Comparable<User>, Serializable {
 
 	private String username;
 	private String password;
 	private int score;
 	private int games;
-	private double wins;
+	private int wins;
 	private int lastStreak;
 	private int maxStreak;
 	private double guessDistribution;
@@ -17,7 +19,7 @@ public class User implements Comparable<User>, Serializable {
 		this.password = password;
 		this.score = 0;
 		this.games = 0;
-		this.wins = 0.0;
+		this.wins = 0;
 		this.lastStreak = 0;
 		this.maxStreak = 0;
 		this.guessDistribution = 0.0;
@@ -52,7 +54,12 @@ public class User implements Comparable<User>, Serializable {
 		games++;
 	}
 
-	public double getWins() {
+	@JsonIgnore
+	public float getWinPercentage() {
+		return wins / games * 100;
+	}
+
+	public int getWins() {
 		return wins;
 	}
 
