@@ -55,8 +55,8 @@ public class User implements Comparable<User>, Serializable {
 	}
 
 	@JsonIgnore
-	public float getWinPercentage() {
-		return wins / games * 100;
+	public double getWinPercentage() {
+		return (double) wins / games * 100;
 	}
 
 	public int getWins() {
@@ -65,22 +65,21 @@ public class User implements Comparable<User>, Serializable {
 
 	public void incWins() {
 		wins++;
+		lastStreak++;
+		if (lastStreak > maxStreak)
+			maxStreak = lastStreak;
 	}
 
 	public int getLastStreak() {
 		return lastStreak;
 	}
 
-	public void incLastStreak() {
-		lastStreak++;
+	public void resetLastStreak() {
+		lastStreak = 0;
 	}
 
 	public int getMaxStreak() {
 		return maxStreak;
-	}
-
-	public void incMaxStreak() {
-		maxStreak++;
 	}
 
 	public double getGuessDistribution() {
@@ -88,7 +87,19 @@ public class User implements Comparable<User>, Serializable {
 	}
 
 	public void updateGuessDistribution() {
+		guessDistribution = (double) score / wins;
+	}
 
+	public String statistics() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("score: " + score + "\n< ");
+		builder.append("games: " + games + "\n< ");
+		builder.append("wins: " + String.format("%.2f", getWinPercentage()) + "%\n< ");
+		builder.append("last streak: " + lastStreak + "\n< ");
+		builder.append("max streak: " + maxStreak + "\n< ");
+		builder.append("guess distribution: " + String.format("%.2f", guessDistribution));
+
+		return builder.toString();
 	}
 
 	public boolean isOnline() {

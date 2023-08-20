@@ -187,6 +187,12 @@ public class Client {
 		System.out.println("< " + response);
 	}
 
+	private void statistics(String cmd) {
+		this.send(cmd + " " + username);
+		String response = this.receive();
+		System.out.println("< " + response);
+	}
+
 	private void share(String cmd) {
 		this.send(cmd + " " + username);
 		String response = this.receive();
@@ -275,6 +281,8 @@ public class Client {
 				this.play(cmd);
 			else if (first.equals("guess"))
 				this.guess(cmd);
+			else if (first.equals("statistics"))
+				this.statistics(cmd);
 			else if (first.equals("share"))
 				this.share(cmd);
 			else if (first.equals("show"))

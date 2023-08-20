@@ -16,6 +16,10 @@ public class Session {
 		this.word = "";
 	}
 
+	public boolean isClose() {
+		return this.word.equals("");
+	}
+
 	public int getAttempts() {
 		return this.attempts;
 	}

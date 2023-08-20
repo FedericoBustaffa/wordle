@@ -94,7 +94,7 @@ public class Receiver implements Runnable {
 				user = it.next();
 				if (username.equals(user.getUsername())) {
 					if (wordle.startSession(username)) {
-						System.out.println("< " + wordle.getSessions());
+						wordle.getSessions();
 						user.incGames();
 						buffer.put("game started".getBytes());
 					} else
@@ -119,15 +119,39 @@ public class Receiver implements Runnable {
 
 		String word = cmd[1];
 		String guess_result = wordle.guess(username, word);
-		if (guess_result.contains("right")) {
-			int attempts = wordle.getSessions().get(username).getAttempts();
-			User u = users.get(username);
-			u.incWins();
-			u.updateScore(12 - attempts);
-			wordle.endSession(username);
+		Session s = wordle.get(username);
+		if (s != null) {
+			int attempts = s.getAttempts();
+			User u;
+			if (guess_result.contains("right")) {
+				u = users.get(username);
+				u.incWins();
+				u.updateScore(12 - attempts);
+				u.updateGuessDistribution();
+				wordle.endSession(username);
+			} else if (attempts >= 2) {
+				u = users.get(username);
+				u.resetLastStreak();
+			}
 		}
-		// System.out.println("< " + wordle.getSessions());
+		wordle.getSessions();
 		buffer.put((guess_result).getBytes());
+	}
+
+	private void statistics(String[] cmd) {
+		if (cmd.length != 2) {
+			buffer.put("ERROR USAGE: statistics".getBytes());
+			return;
+		}
+
+		String username = cmd[1];
+		if (username.equals("null")) {
+			buffer.put("ERROR: login to see your statistics".getBytes());
+			return;
+		}
+
+		User user = users.get(username);
+		buffer.put(user.statistics().getBytes());
 	}
 
 	private void share(String[] cmd) {
@@ -212,6 +236,8 @@ public class Receiver implements Runnable {
 					play(cmd);
 				else if (first.equals("guess"))
 					guess(cmd);
+				else if (first.equals("statistics"))
+					statistics(cmd);
 				else if (first.equals("share"))
 					share(cmd);
 				else if (first.equals("logout"))

@@ -35,8 +35,12 @@ public class Wordle {
 		random = new Random();
 	}
 
-	public ConcurrentHashMap<String, Session> getSessions() {
-		return sessions;
+	public void getSessions() {
+		System.out.println("< " + sessions);
+	}
+
+	public Session get(String username) {
+		return sessions.get(username);
 	}
 
 	public void extractWord() {
@@ -58,20 +62,19 @@ public class Wordle {
 		Session session = sessions.get(username);
 		if (session == null)
 			return;
-		else if (session.getWord().equals(current_word))
+		else if (current_word.equals(session.getWord()))
 			session.close();
 		else
 			sessions.remove(username);
 	}
 
-	public void clear() {
+	public synchronized void clear() {
 		List<String> keys = Collections.list(sessions.keys());
 		Iterator<String> it = keys.iterator();
 		String username;
 		while (it.hasNext()) {
 			username = it.next();
-			// System.out.println("< " + sessions.get(username).equals(""));
-			if (sessions.get(username).getWord().equals("")) {
+			if (sessions.get(username).isClose()) {
 				sessions.remove(username);
 				System.out.println("< " + sessions);
 			}
@@ -95,7 +98,6 @@ public class Wordle {
 
 	public String guess(String username, String word) {
 		Session session = sessions.get(username);
-		// System.out.println("< GUESS: " + word + " : " + session_word);
 		if (!sessions.containsKey(username))
 			return "ERROR: you have to start a new game before";
 		else if (session.getAttempts() >= 2)
@@ -112,12 +114,8 @@ public class Wordle {
 				msg = "you guess right!";
 
 			session.increaseAttempts();
-			if (session.getAttempts() >= 2) {
-				if (!session.getWord().equals(current_word))
-					sessions.remove(username);
-				else
-					session.close();
-			}
+			if (session.getAttempts() >= 2)
+				session.close();
 
 			return msg;
 		}
