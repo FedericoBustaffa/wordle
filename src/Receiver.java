@@ -38,8 +38,10 @@ public class Receiver implements Runnable {
 				"< login <username> <password>\n" +
 				"< play\n" +
 				"< guess <word>\n" +
+				"< statistics\n" +
 				"< share\n" +
-				"< show\n" +
+				"< show sharing\n" +
+				"< show ranking\n" +
 				"< logout\n" +
 				"< exit";
 
@@ -58,23 +60,23 @@ public class Receiver implements Runnable {
 
 		String username = cmd[1];
 		String password = cmd[2];
-		for (User u : users.values()) {
-			if (username.equals(u.getUsername())) {
-				if (password.equals(u.getPassword())) {
-					if (!u.isOnline()) {
-						u.online();
-						buffer.put("login success".getBytes());
-						System.out.println("< " + username + " logged in");
-					} else {
-						buffer.put("ERROR: already logged in".getBytes());
-					}
-				} else {
-					buffer.put("ERROR: wrong password".getBytes());
-				}
-				return;
-			}
+		User u = users.get(username);
+		if (u == null) {
+			buffer.put("ERROR: register to login".getBytes());
+			return;
 		}
-		buffer.put(("ERROR: user " + username + " not registered").getBytes());
+
+		if (password.equals(u.getPassword())) {
+			if (u.isOnline()) {
+				buffer.put("ERROR: user already logged in".getBytes());
+			} else {
+				u.online();
+				buffer.put("login success".getBytes());
+				System.out.println("< " + username + " logged in");
+			}
+		} else {
+			buffer.put("ERROR: wrong password".getBytes());
+		}
 	}
 
 	private void play(String[] cmd) {
@@ -126,10 +128,9 @@ public class Receiver implements Runnable {
 			if (guess_result.contains("right")) {
 				u = users.get(username);
 				u.incWins();
-				u.updateScore(12 - attempts);
 				u.updateGuessDistribution(attempts);
 				wordle.endSession(username);
-			} else if (attempts >= 2) {
+			} else if (attempts >= 12) {
 				u = users.get(username);
 				u.resetLastStreak();
 			}
@@ -185,38 +186,42 @@ public class Receiver implements Runnable {
 			return;
 		}
 
-		for (User u : users.values()) {
-			if (username.equals(u.getUsername())) {
-				if (u.isOnline()) {
-					u.offline();
-					buffer.put(("logout success: " + username).getBytes());
-					System.out.println("< " + username + " left");
-				} else {
-					buffer.put(("ERROR: not logged in yet").getBytes());
-				}
-				return;
-			}
+		User u = users.get(username);
+		if (u == null) {
+			buffer.put(("ERROR: user " + username + " not present").getBytes());
+			return;
 		}
-		buffer.put(("ERROR: user " + username + " not present").getBytes());
+
+		if (!u.isOnline()) {
+			buffer.put("ERROR: not logged yet".getBytes());
+		} else {
+			u.offline();
+			buffer.put(("logout success: " + username).getBytes());
+			System.out.println("< " + username + " left");
+		}
 	}
 
 	private void exit(String[] cmd) {
 		if (cmd.length != 2) {
 			buffer.put("ERROR USAGE: exit".getBytes());
 			return;
-		} else if (!cmd[1].equals("null")) {
-			String username = cmd[1];
-			for (User u : users.values()) {
-				if (username.equals(u.getUsername())) {
-					u.offline();
-					buffer.put(("exit success " + username).getBytes());
-					System.out.println("< " + username + " left");
-					return;
-				}
-			}
-			buffer.put(("ERROR: username " + username + " not present").getBytes());
-		} else {
+		}
+
+		String username = cmd[1];
+		if (username.equals("null")) {
 			buffer.put("exit success".getBytes());
+			return;
+		}
+
+		User u = users.get(username);
+		if (u == null) {
+			buffer.put(("ERROR: username " + username + " not present").getBytes());
+			return;
+		} else {
+			u.offline();
+			buffer.put(("exit success " + username).getBytes());
+			System.out.println("< " + username + " left");
+			return;
 		}
 	}
 

@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -6,32 +7,35 @@ public class User implements Comparable<User>, Serializable {
 
 	private String username;
 	private String password;
+	private boolean online;
+
 	private int score;
 	private int games;
 	private int wins;
 	private int lastStreak;
 	private int maxStreak;
-	private int attempts;
-	private double guessDistribution;
-	private boolean online;
+	private int[] guessDistribution;
 
 	public User(String username, String password) {
 		this.username = username;
 		this.password = password;
+		this.online = false;
+
 		this.score = 0;
 		this.games = 0;
 		this.wins = 0;
 		this.lastStreak = 0;
 		this.maxStreak = 0;
-		this.attempts = 0;
-		this.guessDistribution = 0.0;
-		this.online = false;
+		this.guessDistribution = new int[12];
+		for (int i = 0; i < 12; i++)
+			guessDistribution[i] = 0;
 	}
 
 	public User() {
 		this(null, null);
 	}
 
+	// User utility methods
 	public String getUsername() {
 		return username;
 	}
@@ -40,12 +44,21 @@ public class User implements Comparable<User>, Serializable {
 		return password;
 	}
 
-	public int getScore() {
-		return score;
+	public boolean isOnline() {
+		return online;
 	}
 
-	public void updateScore(int score) {
-		this.score += score;
+	public void online() {
+		online = true;
+	}
+
+	public void offline() {
+		online = false;
+	}
+
+	// Score methods
+	public int getScore() {
+		return score;
 	}
 
 	public int getGames() {
@@ -84,41 +97,29 @@ public class User implements Comparable<User>, Serializable {
 		return maxStreak;
 	}
 
-	public int getAttempts() {
-		return attempts;
-	}
-
-	public double getGuessDistribution() {
+	public int[] getGuessDistribution() {
 		return guessDistribution;
 	}
 
 	public void updateGuessDistribution(int attempts) {
-		this.attempts += attempts;
-		guessDistribution = (double) this.attempts / wins;
+		guessDistribution[attempts - 1]++;
+		int s = 0;
+		for (int i = 0; i < 12; i++) {
+			s += (12 - i) * guessDistribution[i];
+		}
+		score += s / wins;
 	}
 
 	public String statistics() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("score: " + score + "\n< ");
+		builder.append("score: " + getScore() + "\n< ");
 		builder.append("games: " + games + "\n< ");
 		builder.append("wins: " + String.format("%.2f", getWinPercentage()) + "%\n< ");
 		builder.append("last streak: " + lastStreak + "\n< ");
 		builder.append("max streak: " + maxStreak + "\n< ");
-		builder.append("guess distribution: " + String.format("%.2f", guessDistribution));
+		builder.append("guess distribution: " + Arrays.toString(guessDistribution));
 
 		return builder.toString();
-	}
-
-	public boolean isOnline() {
-		return online;
-	}
-
-	public void online() {
-		online = true;
-	}
-
-	public void offline() {
-		online = false;
 	}
 
 	@Override
