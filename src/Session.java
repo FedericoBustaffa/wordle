@@ -2,10 +2,12 @@ public class Session {
 
 	private String word;
 	private int attempts;
+	private boolean close;
 
 	public Session(String word) {
 		this.word = word;
-		attempts = 0;
+		this.attempts = 0;
+		this.close = false;
 	}
 
 	public String getWord() {
@@ -13,11 +15,11 @@ public class Session {
 	}
 
 	public void close() {
-		this.word = "";
+		this.close = true;
 	}
 
 	public boolean isClose() {
-		return this.word.equals("");
+		return this.close;
 	}
 
 	public int getAttempts() {
@@ -28,11 +30,14 @@ public class Session {
 		this.attempts++;
 	}
 
+	public void reset(String word) {
+		this.word = word;
+		this.attempts = 0;
+		this.close = false;
+	}
+
 	@Override
 	public String toString() {
-		if (this.word.equals(""))
-			return Integer.toString(attempts);
-		else
-			return this.word + ", " + this.attempts;
+		return this.word + ", " + this.attempts;
 	}
 }

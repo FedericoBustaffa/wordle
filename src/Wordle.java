@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Collections;
-import java.util.Iterator;
 
 public class Wordle {
 
@@ -44,15 +42,19 @@ public class Wordle {
 	}
 
 	public void extractWord() {
-		current_word = words.remove(random.nextInt(words.size()));
+		current_word = words.get(random.nextInt(words.size()));
 		System.out.println("< extracted word: " + current_word);
 	}
 
 	public boolean startSession(String username) {
 		Session session = sessions.get(username);
-		if (session != null)
-			return false;
-		else {
+		if (session != null) {
+			if (session.isClose()) {
+				session.reset(current_word);
+				return true;
+			} else
+				return false;
+		} else {
 			sessions.put(username, new Session(current_word));
 			return true;
 		}
@@ -62,23 +64,8 @@ public class Wordle {
 		Session session = sessions.get(username);
 		if (session == null)
 			return;
-		else if (current_word.equals(session.getWord()))
-			session.close();
 		else
-			sessions.remove(username);
-	}
-
-	public synchronized void clear() {
-		List<String> keys = Collections.list(sessions.keys());
-		Iterator<String> it = keys.iterator();
-		String username;
-		while (it.hasNext()) {
-			username = it.next();
-			if (sessions.get(username).isClose()) {
-				sessions.remove(username);
-				System.out.println("< " + sessions);
-			}
-		}
+			session.close();
 	}
 
 	private String hints(String word, String session_word) {
@@ -102,8 +89,10 @@ public class Wordle {
 			return "ERROR: you have to start a new game before";
 		else if (session.getAttempts() >= 12)
 			return "ERROR: attempts terminated";
-		else if (session.getWord().equals(""))
+		else if (session.isClose())
 			return "ERROR: your session is closed";
+		else if (!words.contains(word))
+			return "ERROR: invalid word";
 		else if (word.length() != 10)
 			return "ERROR: word length must be 10";
 		else {

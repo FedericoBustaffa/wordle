@@ -3,7 +3,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Receiver implements Runnable {
@@ -85,26 +84,24 @@ public class Receiver implements Runnable {
 			return;
 		}
 
+		if (users == null) {
+			buffer.put("ERROR: register to play".getBytes());
+			return;
+		}
+
 		String username = cmd[1];
 		if (username.equals("null")) {
 			buffer.put("ERROR: login to play".getBytes());
 			return;
-		} else {
-			Iterator<User> it = users.values().iterator();
-			User user;
-			while (it.hasNext()) {
-				user = it.next();
-				if (username.equals(user.getUsername())) {
-					if (wordle.startSession(username)) {
-						wordle.getSessions();
-						user.incGames();
-						buffer.put("game started".getBytes());
-					} else
-						buffer.put("you can't start a new game now".getBytes());
-					return;
-				}
-			}
 		}
+
+		User u = users.get(username);
+		if (wordle.startSession(username)) {
+			wordle.getSessions();
+			u.incGames();
+			buffer.put("game started".getBytes());
+		} else
+			buffer.put("you can't start a new game now".getBytes());
 	}
 
 	private void guess(String[] cmd) {
@@ -156,22 +153,26 @@ public class Receiver implements Runnable {
 	}
 
 	private void share(String[] cmd) {
-		if (cmd.length != 3) {
+		if (cmd.length != 2) {
 			buffer.put("ERROR USAGE: share".getBytes());
 			return;
 		}
 
 		String username = cmd[1];
-		int last_score = Integer.parseInt(cmd[2]);
 		if (username.equals("null")) {
 			buffer.put("ERROR: login to share your score".getBytes());
 			return;
-		} else if (last_score == -1) {
-			buffer.put("ERROR: play at least one game to share your score".getBytes());
-			return;
 		}
 
-		buffer.put(("share: " + username + " " + last_score).getBytes());
+		Session s = wordle.get(username);
+		if (s == null) {
+			buffer.put("ERROR: you have to play at least one game".getBytes());
+		} else {
+			if (!s.isClose())
+				buffer.put("ERROR: you have to finish the current game".getBytes());
+			else
+				buffer.put(("share: " + s).getBytes());
+		}
 	}
 
 	private void logout(String[] cmd) {

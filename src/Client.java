@@ -132,7 +132,7 @@ public class Client {
 	private void help(String cmd) {
 		this.send(cmd);
 		String response = this.receive();
-		System.out.println("< " + response);
+		System.out.println("< HELP\n< " + response);
 	}
 
 	public String register(String cmd) {
@@ -190,7 +190,7 @@ public class Client {
 	private void statistics(String cmd) {
 		this.send(cmd + " " + username);
 		String response = this.receive();
-		System.out.println("< " + response);
+		System.out.println("< STATISTICS\n< " + response);
 	}
 
 	private void share(String cmd) {

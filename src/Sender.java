@@ -46,8 +46,10 @@ public class Sender implements Runnable {
 
 	private void share(String msg) {
 		try {
-			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
-			multicast.send(packet);
+			if (!msg.contains("ERROR")) {
+				DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
+				multicast.send(packet);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
