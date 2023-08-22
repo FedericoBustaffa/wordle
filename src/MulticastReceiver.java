@@ -26,7 +26,7 @@ public class MulticastReceiver extends Thread {
 				if (msg.contains("logout") || msg.contains("exit")) {
 					if (msg.contains(username))
 						break;
-				} else if (!msg.contains(username))
+				} else if (!msg.contains(username) && !scores.contains(msg))
 					scores.add(msg);
 			}
 		} catch (IOException e) {

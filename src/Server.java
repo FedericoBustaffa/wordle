@@ -13,6 +13,7 @@ import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -29,6 +30,7 @@ public class Server {
 
 	// Hash Map of Users
 	private ConcurrentHashMap<String, User> users;
+	private List<User> ranking;
 
 	// Wordle
 	private Wordle wordle;
@@ -102,6 +104,12 @@ public class Server {
 			// Json wrapper for backup
 			json_wrapper = new JsonWrapper(BACKUP_USERS);
 			users = json_wrapper.readArray();
+			ranking = Collections.synchronizedList(new ArrayList<User>());
+			if (users != null) {
+				for (User u : users.values())
+					ranking.add(u);
+			}
+			Collections.sort(ranking);
 
 			// Wordle init
 			wordle = new Wordle(new File(WORDS));
@@ -109,7 +117,7 @@ public class Server {
 
 			// RMI
 			notifiers = Collections.synchronizedList(new LinkedList<Notify>());
-			registration = new RegistrationService(users, notifiers);
+			registration = new RegistrationService(users, ranking, notifiers);
 			registry = LocateRegistry.createRegistry(RMI_PORT);
 			registry.rebind(Registration.SERVICE, registration);
 			System.out.println("< RMI service on port: " + RMI_PORT);
@@ -151,7 +159,7 @@ public class Server {
 				System.out.println("< new client connected: " +
 						ACTIVE_CONNECTIONS.incrementAndGet() + " clients connected");
 				ByteBuffer buffer = ByteBuffer.allocate(512);
-				Attachment attachment = new Attachment(buffer, users, ACTIVE_CONNECTIONS,
+				Attachment attachment = new Attachment(buffer, users, ranking, ACTIVE_CONNECTIONS,
 						notifiers, multicast, group, wordle);
 				socket.register(selector, SelectionKey.OP_READ, attachment);
 			}

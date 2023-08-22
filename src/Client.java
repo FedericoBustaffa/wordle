@@ -199,7 +199,7 @@ public class Client {
 		System.out.println("< " + response);
 	}
 
-	private void showMeSharing() {
+	private void show() {
 		if (scores.size() == 0) {
 			System.out.println("< there are no notifications");
 			return;
@@ -209,6 +209,12 @@ public class Client {
 		for (String s : scores)
 			System.out.println("< " + s);
 		System.out.println("< ----------------");
+	}
+
+	private void ranking(String cmd) {
+		this.send(cmd);
+		String response = this.receive();
+		System.out.println("< " + response);
 	}
 
 	private void logout(String cmd) {
@@ -286,7 +292,9 @@ public class Client {
 			else if (first.equals("share"))
 				this.share(cmd);
 			else if (first.equals("show"))
-				this.showMeSharing();
+				this.show();
+			else if (first.equals("ranking"))
+				this.ranking(cmd);
 			else if (first.equals("exit"))
 				this.exit(cmd);
 			else

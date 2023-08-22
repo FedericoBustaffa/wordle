@@ -9,7 +9,7 @@ public class User implements Comparable<User>, Serializable {
 	private String password;
 	private boolean online;
 
-	private int score;
+	private double score;
 	private int games;
 	private int wins;
 	private int lastStreak;
@@ -21,7 +21,7 @@ public class User implements Comparable<User>, Serializable {
 		this.password = password;
 		this.online = false;
 
-		this.score = 0;
+		this.score = 0.0;
 		this.games = 0;
 		this.wins = 0;
 		this.lastStreak = 0;
@@ -57,7 +57,7 @@ public class User implements Comparable<User>, Serializable {
 	}
 
 	// Score methods
-	public int getScore() {
+	public double getScore() {
 		return score;
 	}
 
@@ -104,15 +104,17 @@ public class User implements Comparable<User>, Serializable {
 	public void updateGuessDistribution(int attempts) {
 		guessDistribution[attempts - 1]++;
 		int s = 0;
+		int w = 0;
 		for (int i = 0; i < 12; i++) {
 			s += (12 - i) * guessDistribution[i];
+			w += i + 1;
 		}
-		score += s / wins;
+		score = (double) s / w;
 	}
 
 	public String statistics() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("score: " + getScore() + "\n< ");
+		builder.append("score: " + String.format("%.2f", getScore()) + "\n< ");
 		builder.append("games: " + games + "\n< ");
 		builder.append("wins: " + String.format("%.2f", getWinPercentage()) + "%\n< ");
 		builder.append("last streak: " + lastStreak + "\n< ");
@@ -125,10 +127,9 @@ public class User implements Comparable<User>, Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("username: " + username);
-		// builder.append("score: " + score);
+		builder.append(username + ": " + score);
 
-		return builder.toString();
+		return String.format("%s: %.2f", username, score);
 	}
 
 	@Override

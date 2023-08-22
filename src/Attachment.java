@@ -9,17 +9,19 @@ public class Attachment {
 
 	private ByteBuffer buffer;
 	private ConcurrentHashMap<String, User> users;
+	private List<User> ranking;
 	private volatile AtomicInteger ACTIVE_CONNECTIONS;
 	private List<Notify> notifiers;
 	private MulticastSocket multicast;
 	private SocketAddress group;
 	private Wordle wordle;
 
-	public Attachment(ByteBuffer buffer, ConcurrentHashMap<String, User> users,
+	public Attachment(ByteBuffer buffer, ConcurrentHashMap<String, User> users, List<User> ranking,
 			AtomicInteger ACTIVE_CONNECTIONS, List<Notify> notifiers, MulticastSocket multicast,
 			SocketAddress group, Wordle wordle) {
 		this.buffer = buffer;
 		this.users = users;
+		this.ranking = ranking;
 		this.ACTIVE_CONNECTIONS = ACTIVE_CONNECTIONS;
 		this.notifiers = notifiers;
 		this.multicast = multicast;
@@ -33,6 +35,10 @@ public class Attachment {
 
 	public ConcurrentHashMap<String, User> getUsers() {
 		return users;
+	}
+
+	public List<User> getRanking() {
+		return ranking;
 	}
 
 	public AtomicInteger getActiveConnections() {

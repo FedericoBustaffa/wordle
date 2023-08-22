@@ -3,6 +3,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Receiver implements Runnable {
@@ -14,6 +16,7 @@ public class Receiver implements Runnable {
 	private ByteBuffer buffer;
 
 	private ConcurrentHashMap<String, User> users;
+	private List<User> ranking;
 	private Wordle wordle;
 
 	public Receiver(SelectionKey key) {
@@ -23,6 +26,7 @@ public class Receiver implements Runnable {
 		this.socket = (SocketChannel) key.channel();
 		this.buffer = attachment.getBuffer();
 		this.users = attachment.getUsers();
+		this.ranking = attachment.getRanking();
 		this.wordle = attachment.getWordle();
 	}
 
@@ -127,6 +131,7 @@ public class Receiver implements Runnable {
 				u.incWins();
 				u.updateGuessDistribution(attempts);
 				wordle.endSession(username);
+				Collections.sort(ranking);
 			} else if (attempts >= 12) {
 				u = users.get(username);
 				u.resetLastStreak();
@@ -171,8 +176,27 @@ public class Receiver implements Runnable {
 			if (!s.isClose())
 				buffer.put("ERROR: you have to finish the current game".getBytes());
 			else
-				buffer.put(("share: " + s).getBytes());
+				buffer.put(("share: " + username + ", " + s).getBytes());
 		}
+	}
+
+	private void ranking(String[] cmd) {
+		if (cmd.length != 1) {
+			buffer.put("ERROR USAGE: ranking".getBytes());
+			return;
+		}
+
+		if (ranking.isEmpty()) {
+			buffer.put("empty ranking list".getBytes());
+			return;
+		}
+		StringBuilder builder = new StringBuilder();
+		builder.append("RANKING LIST\n");
+		for (User u : ranking) {
+			builder.append("< " + u + "\n");
+		}
+		builder.append("< --------");
+		buffer.put(builder.toString().getBytes());
 	}
 
 	private void logout(String[] cmd) {
@@ -246,6 +270,8 @@ public class Receiver implements Runnable {
 					statistics(cmd);
 				else if (first.equals("share"))
 					share(cmd);
+				else if (first.equals("ranking"))
+					ranking(cmd);
 				else if (first.equals("logout"))
 					logout(cmd);
 				else if (first.equals("exit"))

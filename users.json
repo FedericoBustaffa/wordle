@@ -2,20 +2,20 @@
   "username" : "betta",
   "password" : "b3tt4",
   "online" : false,
-  "score" : 45,
-  "games" : 5,
-  "wins" : 5,
-  "lastStreak" : 5,
-  "maxStreak" : 5,
-  "guessDistribution" : [ 2, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0 ]
+  "score" : 0.3076923076923077,
+  "games" : 2,
+  "wins" : 2,
+  "lastStreak" : 2,
+  "maxStreak" : 2,
+  "guessDistribution" : [ 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 }, {
   "username" : "fede",
   "password" : "f3d3",
   "online" : false,
-  "score" : 120,
-  "games" : 14,
-  "wins" : 11,
-  "lastStreak" : 11,
-  "maxStreak" : 11,
-  "guessDistribution" : [ 5, 4, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "score" : 0.3076923076923077,
+  "games" : 2,
+  "wins" : 2,
+  "lastStreak" : 2,
+  "maxStreak" : 2,
+  "guessDistribution" : [ 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 } ]
