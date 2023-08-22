@@ -7,6 +7,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,6 +16,9 @@ public class Sender implements Runnable {
 	// Attachment
 	private SelectionKey key;
 	private Attachment attachment;
+
+	// classifica
+	private List<User> ranking;
 
 	// TCP
 	private Selector selector;
@@ -32,6 +36,8 @@ public class Sender implements Runnable {
 	public Sender(SelectionKey key) {
 		this.key = key;
 		this.attachment = (Attachment) key.attachment();
+
+		this.ranking = attachment.getRanking();
 
 		this.selector = key.selector();
 		this.socket = (SocketChannel) key.channel();
@@ -52,6 +58,33 @@ public class Sender implements Runnable {
 				multicast.send(packet);
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void updateRanking(String msg) {
+		// aggiornamento classifica
+		try {
+			String[] top_three;
+			if (ranking.size() >= 3)
+				top_three = new String[3];
+			else
+				top_three = new String[ranking.size()];
+
+			for (int i = 0; i < top_three.length; i++)
+				top_three[i] = ranking.get(i).getUsername();
+
+			Collections.sort(ranking);
+			String username;
+			for (int i = 0; i < top_three.length; i++) {
+				username = ranking.get(i).getUsername();
+				if (!username.equals(top_three[i])) {
+					for (int j = 0; j < notifiers.size(); j++)
+						notifiers.get(j).update("new top three ranking");
+					return;
+				}
+			}
+		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 	}
@@ -88,11 +121,13 @@ public class Sender implements Runnable {
 
 			String msg = new String(bytes, 0, length);
 			if (!msg.contains("ERROR")) {
-				if (msg.contains("share")) {
+				if (msg.contains("share"))
 					this.share(msg);
-				} else if (msg.contains("logout")) {
+				else if (msg.contains("right"))
+					this.updateRanking(msg);
+				else if (msg.contains("logout"))
 					this.logout(msg);
-				} else if (msg.contains("exit")) {
+				else if (msg.contains("exit")) {
 					this.exit(msg);
 					selector.wakeup();
 					return;

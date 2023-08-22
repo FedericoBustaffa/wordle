@@ -3,7 +3,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -127,11 +126,11 @@ public class Receiver implements Runnable {
 			int attempts = s.getAttempts();
 			User u;
 			if (guess_result.contains("right")) {
+				// parola indovinata
 				u = users.get(username);
 				u.incWins();
 				u.updateGuessDistribution(attempts);
 				wordle.endSession(username);
-				Collections.sort(ranking);
 			} else if (attempts >= 12) {
 				u = users.get(username);
 				u.resetLastStreak();
