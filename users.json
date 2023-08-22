@@ -12,10 +12,10 @@
   "username" : "fede",
   "password" : "f3d3",
   "online" : false,
-  "score" : 0.15384615384615385,
-  "games" : 1,
-  "wins" : 1,
-  "lastStreak" : 1,
-  "maxStreak" : 1,
-  "guessDistribution" : [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "score" : 0.44871794871794873,
+  "games" : 3,
+  "wins" : 3,
+  "lastStreak" : 3,
+  "maxStreak" : 3,
+  "guessDistribution" : [ 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 } ]

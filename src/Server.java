@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Server {
+public class Server extends Thread {
 
 	// Hash Map of Users
 	private ConcurrentHashMap<String, User> users;
@@ -48,15 +48,19 @@ public class Server {
 	private int MULTICAST_PORT;
 	private long EXTRACTION_TIMEOUT;
 
+	// Server running conditions
+	private boolean RUNNING;
+	private volatile AtomicInteger ACTIVE_CONNECTIONS;
+
 	// RMI
 	private Registry registry;
 	private Registration registration;
 	private List<Notify> notifiers;
 
 	// TCP
-	private volatile AtomicInteger ACTIVE_CONNECTIONS;
 	private SocketAddress tcp_service;
 	private Selector selector;
+	private SelectionKey server_socket_key;
 	private ExecutorService pool;
 
 	// MULTICAST
@@ -98,9 +102,6 @@ public class Server {
 			}
 			scanner.close();
 
-			// playing users init
-			// playing_users = Collections.synchronizedSet(new TreeSet<User>());
-
 			// Json wrapper for backup
 			json_wrapper = new JsonWrapper(BACKUP_USERS);
 			users = json_wrapper.readArray();
@@ -114,6 +115,7 @@ public class Server {
 			// Wordle init
 			wordle = new Wordle(new File(WORDS));
 			extractor = new Thread(new Extractor(wordle, EXTRACTION_TIMEOUT));
+			extractor.start();
 
 			// RMI
 			notifiers = Collections.synchronizedList(new LinkedList<Notify>());
@@ -123,6 +125,8 @@ public class Server {
 			System.out.println("< RMI service on port: " + RMI_PORT);
 
 			// TCP
+			RUNNING = true;
+
 			ACTIVE_CONNECTIONS = new AtomicInteger(0);
 			tcp_service = new InetSocketAddress(InetAddress.getLocalHost(), TCP_PORT);
 
@@ -131,7 +135,7 @@ public class Server {
 			ServerSocketChannel server = ServerSocketChannel.open();
 			server.configureBlocking(false);
 			server.bind(tcp_service);
-			server.register(selector, SelectionKey.OP_ACCEPT);
+			server_socket_key = server.register(selector, SelectionKey.OP_ACCEPT);
 
 			pool = Executors.newCachedThreadPool();
 			System.out.println("< TCP connections available on port: " + TCP_PORT);
@@ -142,9 +146,6 @@ public class Server {
 			// multicast.joinGroup(group, null);
 			System.out.println("< MULTICAST address: " + MULTICAST_ADDRESS);
 			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
-
-			// words extractor thread start
-			extractor.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -199,12 +200,33 @@ public class Server {
 		}
 	}
 
+	@Override
+	public void run() {
+		try {
+			Scanner shell = new Scanner(System.in);
+			do {
+				System.out.printf("> ");
+			} while (!shell.nextLine().equals("shutdown"));
+			shell.close();
+			server_socket_key.channel().close();
+			RUNNING = false;
+			selector.wakeup();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public synchronized boolean isRunning() {
+		return RUNNING;
+	}
+
 	public synchronized int getActiveConnections() {
 		return ACTIVE_CONNECTIONS.get();
 	}
 
 	public void shutdown() {
 		try {
+			System.out.println("< closure");
 			pool.shutdown();
 			while (!pool.awaitTermination(60L, TimeUnit.SECONDS))
 				System.out.println("< waiting for thread closure");
@@ -239,9 +261,10 @@ public class Server {
 
 	public static void main(String[] args) {
 		Server server = new Server();
-		do {
+		server.start();
+		while (server.isRunning() || server.getActiveConnections() > 0) {
 			server.multiplex();
-		} while (server.getActiveConnections() > 0);
+		}
 		server.shutdown();
 	}
 

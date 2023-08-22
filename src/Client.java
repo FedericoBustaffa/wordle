@@ -105,7 +105,8 @@ public class Client {
 			reader = socket.getInputStream();
 			writer = socket.getOutputStream();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("< CONNECTION ERROR: server not online");
+			System.exit(1);
 		}
 	}
 
