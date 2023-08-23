@@ -190,11 +190,11 @@ public class Receiver implements Runnable {
 			return;
 		}
 		StringBuilder builder = new StringBuilder();
-		builder.append("RANKING LIST\n");
-		for (User u : ranking) {
+		builder.append(" ----- RANKING LIST -----\n");
+		for (User u : ranking)
 			builder.append("< " + u + "\n");
-		}
-		builder.append("< --------");
+		builder.append("< -----------------------");
+
 		buffer.put(builder.toString().getBytes());
 	}
 
@@ -244,7 +244,7 @@ public class Receiver implements Runnable {
 		} else {
 			u.offline();
 			buffer.put(("exit success " + username).getBytes());
-			System.out.println("< " + username + " left");
+			System.out.printf("< " + username + " left");
 			return;
 		}
 	}

@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.rmi.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
@@ -92,6 +93,9 @@ public class Client {
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
 
 			scores = new ConcurrentLinkedQueue<String>();
+		} catch (ConnectException e) {
+			System.out.println("< server not online\n< shutting down");
+			System.exit(1);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
@@ -254,6 +258,7 @@ public class Client {
 				done = true;
 				if (username != null) {
 					username = null;
+					registration.unregisterForNotification(notify_service);
 					UnicastRemoteObject.unexportObject(notify_service, false);
 					mc_receiver.join();
 					multicast.leaveGroup(group);

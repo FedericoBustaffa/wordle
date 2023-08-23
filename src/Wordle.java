@@ -22,8 +22,11 @@ public class Wordle {
 		current_word = null;
 		words = new LinkedList<String>();
 		try (Scanner scanner = new Scanner(file)) {
+			String word;
 			while (scanner.hasNext()) {
-				words.add(scanner.nextLine());
+				word = scanner.nextLine();
+				if (word.length() == 10)
+					words.add(word);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

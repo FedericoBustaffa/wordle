@@ -1,21 +1,31 @@
 [ {
-  "username" : "betta",
-  "password" : "b3tt4",
+  "username" : "chiara",
+  "password" : "ch14r4",
   "online" : false,
-  "score" : 0.2692307692307692,
+  "score" : 0.3076923076923077,
   "games" : 2,
   "wins" : 2,
   "lastStreak" : 2,
   "maxStreak" : 2,
-  "guessDistribution" : [ 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "guessDistribution" : [ 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 }, {
-  "username" : "fede",
-  "password" : "f3d3",
+  "username" : "betta",
+  "password" : "b3tt4",
   "online" : false,
-  "score" : 0.44871794871794873,
+  "score" : 0.4230769230769231,
   "games" : 3,
   "wins" : 3,
   "lastStreak" : 3,
   "maxStreak" : 3,
-  "guessDistribution" : [ 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "guessDistribution" : [ 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
+}, {
+  "username" : "fede",
+  "password" : "f3d3",
+  "online" : false,
+  "score" : 1.0384615384615385,
+  "games" : 10,
+  "wins" : 7,
+  "lastStreak" : 7,
+  "maxStreak" : 7,
+  "guessDistribution" : [ 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 } ]

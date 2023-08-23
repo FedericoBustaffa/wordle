@@ -104,7 +104,7 @@ public class Sender implements Runnable {
 			multicast.send(packet);
 			synchronized (ACTIVE_CONNECTIONS) {
 				System.out.println("< client has left: " +
-						ACTIVE_CONNECTIONS.decrementAndGet() + " connections");
+						ACTIVE_CONNECTIONS.decrementAndGet() + " clients connected");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

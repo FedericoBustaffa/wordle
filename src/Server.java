@@ -115,7 +115,6 @@ public class Server extends Thread {
 			// Wordle init
 			wordle = new Wordle(new File(WORDS));
 			extractor = new Thread(new Extractor(wordle, EXTRACTION_TIMEOUT));
-			extractor.start();
 
 			// RMI
 			notifiers = Collections.synchronizedList(new LinkedList<Notify>());
@@ -146,6 +145,9 @@ public class Server extends Thread {
 			// multicast.joinGroup(group, null);
 			System.out.println("< MULTICAST address: " + MULTICAST_ADDRESS);
 			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
+
+			// extractor thread start
+			extractor.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -171,8 +173,6 @@ public class Server extends Thread {
 
 	public void multiplex() {
 		try {
-			// System.out.println("- - - - - - - -");
-			// System.out.println("< channels ready: " + selector.select(5000L));
 			selector.select();
 			Set<SelectionKey> readyKeys = selector.selectedKeys();
 			Iterator<SelectionKey> it = readyKeys.iterator();
@@ -182,14 +182,11 @@ public class Server extends Thread {
 				it.remove();
 				if (key.isValid()) {
 					if (key.isAcceptable()) {
-						// System.out.println("< ACCEPT");
 						this.accept(key);
 					} else if (key.isWritable()) {
-						// System.out.println("< WRITE");
 						key.interestOps(0);
 						pool.execute(new Sender(key));
 					} else if (key.isReadable()) {
-						// System.out.println("< READ");
 						key.interestOps(0);
 						pool.execute(new Receiver(key));
 					}
@@ -204,9 +201,7 @@ public class Server extends Thread {
 	public void run() {
 		try {
 			Scanner shell = new Scanner(System.in);
-			do {
-				System.out.printf("> ");
-			} while (!shell.nextLine().equals("shutdown"));
+			shell.nextLine();
 			shell.close();
 			server_socket_key.channel().close();
 			RUNNING = false;
