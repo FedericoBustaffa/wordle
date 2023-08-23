@@ -20,15 +20,21 @@ public class JsonWrapper {
 
     public JsonWrapper(String filepath) {
         try {
-            file = new File(filepath);
-            if (!file.exists())
-                file.createNewFile();
+            if (filepath != null) {
+                file = new File(filepath);
+                if (!file.exists())
+                    file.createNewFile();
+            }
             factory = new JsonFactory();
             mapper = new ObjectMapper();
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public JsonWrapper() {
+        this(null);
     }
 
     public void writeArray(ConcurrentHashMap<String, User> users) {
@@ -67,6 +73,16 @@ public class JsonWrapper {
             parser.close();
 
             return users;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String getNode(String content, String node) {
+        try {
+            return mapper.readTree(content).get(node).toString();
         } catch (IOException e) {
             e.printStackTrace();
         }

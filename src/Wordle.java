@@ -103,7 +103,7 @@ public class Wordle {
 			if (!word.equals(session.getWord()))
 				msg = hints(word, session.getWord());
 			else
-				msg = "you guess right!";
+				msg = "you guess right: " + session.getWord();
 
 			session.increaseAttempts();
 			if (session.getAttempts() >= 12)

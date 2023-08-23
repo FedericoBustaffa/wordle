@@ -1,13 +1,16 @@
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.rmi.ConnectException;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -23,6 +26,7 @@ public class Client {
 	private String username; // null if not logged
 	private boolean done;
 	private Scanner input;
+	private JsonWrapper json_wrapper;
 
 	// CONFIGURATION
 	private int RMI_PORT = 1500;
@@ -52,6 +56,7 @@ public class Client {
 			username = null;
 			done = false;
 			input = new Scanner(System.in);
+			json_wrapper = new JsonWrapper();
 
 			// configuration file
 			File config = new File("client_config.txt");
@@ -190,6 +195,25 @@ public class Client {
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
+		if (response.contains("right")) {
+			String word = response.split(" ")[3];
+			try {
+
+				URL url = new URL("https://api.mymemory.translated.net/get?q=" + word +
+						"&langpair=en|it");
+				HttpURLConnection translator = (HttpURLConnection) url.openConnection();
+				translator.setRequestMethod("GET");
+				BufferedInputStream is = new BufferedInputStream(translator.getInputStream());
+				byte[] buffer = new byte[translator.getContentLength()];
+				int count = is.read(buffer);
+				String content = new String(buffer, 0, count);
+				String translation = json_wrapper.getNode(content, "responseData");
+				translation = json_wrapper.getNode(translation, "translatedText");
+				System.out.println("< translation: " + translation);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void statistics(String cmd) {
