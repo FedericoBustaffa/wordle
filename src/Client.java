@@ -207,8 +207,7 @@ public class Client {
 				byte[] buffer = new byte[translator.getContentLength()];
 				int count = is.read(buffer);
 				String content = new String(buffer, 0, count);
-				String translation = json_wrapper.getNode(content, "responseData");
-				translation = json_wrapper.getNode(translation, "translatedText");
+				String translation = json_wrapper.getNode(content, "translatedText");
 				System.out.println("< translation: " + translation);
 			} catch (IOException e) {
 				e.printStackTrace();

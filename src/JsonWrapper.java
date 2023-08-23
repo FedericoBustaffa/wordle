@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -80,13 +81,23 @@ public class JsonWrapper {
         return null;
     }
 
-    public String getNode(String content, String node) {
+    public String getNode(String content, String field) {
         try {
-            return mapper.readTree(content).get(node).toString();
-        } catch (IOException e) {
+            JsonNode node = mapper.readTree(content);
+            if (node.has(field)) {
+                return node.get(field).toString();
+            } else if (node.isObject()) {
+                for (JsonNode n : node) {
+                    return getNode(n.toString(), field);
+                }
+            }
+        } catch (
+
+        IOException e) {
             e.printStackTrace();
         }
 
         return null;
     }
+
 }

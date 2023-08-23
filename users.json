@@ -2,30 +2,30 @@
   "username" : "chiara",
   "password" : "ch14r4",
   "online" : false,
-  "score" : 1.2307692307692308,
-  "games" : 8,
-  "wins" : 8,
-  "lastStreak" : 8,
-  "maxStreak" : 8,
-  "guessDistribution" : [ 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "score" : 1.5384615384615385,
+  "games" : 10,
+  "wins" : 10,
+  "lastStreak" : 10,
+  "maxStreak" : 10,
+  "guessDistribution" : [ 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 }, {
   "username" : "betta",
   "password" : "b3tt4",
   "online" : false,
-  "score" : 0.8846153846153846,
-  "games" : 6,
-  "wins" : 6,
-  "lastStreak" : 6,
-  "maxStreak" : 6,
-  "guessDistribution" : [ 5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "score" : 2.871794871794872,
+  "games" : 19,
+  "wins" : 19,
+  "lastStreak" : 19,
+  "maxStreak" : 19,
+  "guessDistribution" : [ 17, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
 }, {
   "username" : "fede",
   "password" : "f3d3",
   "online" : false,
-  "score" : 3.782051282051282,
-  "games" : 28,
-  "wins" : 25,
-  "lastStreak" : 25,
-  "maxStreak" : 25,
-  "guessDistribution" : [ 20, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "score" : 6.243589743589744,
+  "games" : 45,
+  "wins" : 41,
+  "lastStreak" : 41,
+  "maxStreak" : 41,
+  "guessDistribution" : [ 36, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 } ]
