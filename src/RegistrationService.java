@@ -18,7 +18,7 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 	}
 
 	@Override
-	public String register(String username, String password) throws RemoteException {
+	public synchronized String register(String username, String password) throws RemoteException {
 		if (username == null || username.equals("")) {
 			return "< invalid username";
 		} else if (password == null || password.equals("")) {
@@ -26,9 +26,10 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 		}
 
 		User user = new User(username, password);
-		if (users.put(username, user) != null) {
+		if (users.get(username) != null) {
 			return "< username \"" + username + "\" not available";
 		} else {
+			users.put(username, user);
 			ranking.add(user);
 			System.out.println("< new user: " + username + " has been registered");
 			return "< successful registration";
@@ -36,12 +37,12 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 	}
 
 	@Override
-	public void registerForNotification(Notify notify) throws RemoteException {
+	public synchronized void registerForNotification(Notify notify) throws RemoteException {
 		notify_services.add(notify);
 	}
 
 	@Override
-	public void unregisterForNotification(Notify notify) throws RemoteException {
+	public synchronized void unregisterForNotification(Notify notify) throws RemoteException {
 		notify_services.remove(notify);
 	}
 

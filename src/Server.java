@@ -69,6 +69,7 @@ public class Server extends Thread {
 
 	public Server() {
 		try {
+			System.out.println("< ----- WORDLE -----");
 			// configuration file
 			File config = new File("server_config.txt");
 			if (!config.exists()) {
@@ -142,7 +143,6 @@ public class Server extends Thread {
 			// MULTICAST
 			multicast = new MulticastSocket();
 			group = new InetSocketAddress(MULTICAST_ADDRESS, MULTICAST_PORT);
-			// multicast.joinGroup(group, null);
 			System.out.println("< MULTICAST address: " + MULTICAST_ADDRESS);
 			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
 
@@ -252,15 +252,6 @@ public class Server extends Thread {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public static void main(String[] args) {
-		Server server = new Server();
-		server.start();
-		while (server.isRunning() || server.getActiveConnections() > 0) {
-			server.multiplex();
-		}
-		server.shutdown();
 	}
 
 }

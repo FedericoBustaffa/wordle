@@ -149,7 +149,7 @@ public class Client {
 		try {
 			String[] parse = cmd.split(" ");
 			if (parse.length != 3)
-				return "< ERROR\n< USAGE: register <username> <password>";
+				return "< ERROR USAGE: register <username> <password>";
 
 			return registration.register(parse[1], parse[2]);
 		} catch (RemoteException e) {
@@ -160,7 +160,7 @@ public class Client {
 
 	private void login(String cmd) {
 		if (username != null) {
-			System.out.println("< logout before login");
+			System.out.println("< you are already logged in");
 			return;
 		}
 
@@ -198,9 +198,8 @@ public class Client {
 		if (response.contains("right")) {
 			String word = response.split(" ")[3];
 			try {
-
-				URL url = new URL("https://api.mymemory.translated.net/get?q=" + word +
-						"&langpair=en|it");
+				URL url = new URL("https://api.mymemory.translated.net/get?q=" +
+						word + "&langpair=en|it");
 				HttpURLConnection translator = (HttpURLConnection) url.openConnection();
 				translator.setRequestMethod("GET");
 				BufferedInputStream is = new BufferedInputStream(translator.getInputStream());
@@ -218,7 +217,7 @@ public class Client {
 	private void statistics(String cmd) {
 		this.send(cmd + " " + username);
 		String response = this.receive();
-		System.out.println("< STATISTICS\n< " + response);
+		System.out.println("< ----- STATISTICS -----\n< " + response);
 	}
 
 	private void share(String cmd) {
@@ -345,12 +344,6 @@ public class Client {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public static void main(String[] args) {
-		Client client = new Client();
-		client.shell();
-		client.shutdown();
 	}
 
 }

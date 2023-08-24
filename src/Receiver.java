@@ -42,8 +42,8 @@ public class Receiver implements Runnable {
 				"< guess <word>\n" +
 				"< statistics\n" +
 				"< share\n" +
-				"< show sharing\n" +
-				"< show ranking\n" +
+				"< show\n" +
+				"< ranking\n" +
 				"< logout\n" +
 				"< exit";
 
@@ -193,7 +193,7 @@ public class Receiver implements Runnable {
 		builder.append(" ----- RANKING LIST -----\n");
 		for (User u : ranking)
 			builder.append("< " + u + "\n");
-		builder.append("< -----------------------");
+		builder.append("< -------------------------");
 
 		buffer.put(builder.toString().getBytes());
 	}
@@ -206,7 +206,7 @@ public class Receiver implements Runnable {
 
 		String username = cmd[1];
 		if (username.equals("null")) {
-			buffer.put("ERROR: login before logout".getBytes());
+			buffer.put("ERROR: you're not logged in yet".getBytes());
 			return;
 		}
 
@@ -220,6 +220,11 @@ public class Receiver implements Runnable {
 			buffer.put("ERROR: not logged yet".getBytes());
 		} else {
 			u.offline();
+			Session session = wordle.get(username);
+			if (session != null && !session.isClose()) {
+				session.close();
+				u.resetLastStreak();
+			}
 			buffer.put(("logout success: " + username).getBytes());
 			System.out.println("< " + username + " left");
 		}
@@ -243,8 +248,14 @@ public class Receiver implements Runnable {
 			return;
 		} else {
 			u.offline();
+			Session session = wordle.get(username);
+			if (session != null && !session.isClose()) {
+				session.close();
+				u.resetLastStreak();
+			}
+
 			buffer.put(("exit success " + username).getBytes());
-			System.out.printf("< " + username + " left");
+			System.out.println("< " + username + " left");
 			return;
 		}
 	}

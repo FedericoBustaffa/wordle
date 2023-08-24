@@ -3,23 +3,17 @@ public class Session {
 	private String word;
 	private int attempts;
 	private boolean close;
+	private boolean guessed;
 
 	public Session(String word) {
 		this.word = word;
 		this.attempts = 0;
 		this.close = false;
+		this.guessed = false;
 	}
 
 	public String getWord() {
 		return this.word;
-	}
-
-	public void close() {
-		this.close = true;
-	}
-
-	public boolean isClose() {
-		return this.close;
 	}
 
 	public int getAttempts() {
@@ -30,14 +24,26 @@ public class Session {
 		this.attempts++;
 	}
 
+	public boolean isClose() {
+		return this.close;
+	}
+
+	public void close() {
+		this.close = true;
+	}
+
 	public void reset(String word) {
 		this.word = word;
 		this.attempts = 0;
 		this.close = false;
 	}
 
+	public void win() {
+		this.guessed = true;
+	}
+
 	@Override
 	public String toString() {
-		return this.word + ", " + this.attempts;
+		return this.word + ", " + this.attempts + " : " + (guessed ? "win" : "lose");
 	}
 }

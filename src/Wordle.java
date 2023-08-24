@@ -51,16 +51,18 @@ public class Wordle {
 
 	public boolean startSession(String username) {
 		Session session = sessions.get(username);
-		if (session != null) {
-			if (session.isClose()) {
-				session.reset(current_word);
-				return true;
-			} else
-				return false;
-		} else {
+		if (session == null) {
+
 			sessions.put(username, new Session(current_word));
 			return true;
-		}
+		} else if (session.isClose()) {
+			if (!current_word.equals(session.getWord())) {
+				session.reset(current_word);
+				return true;
+			}
+			return false;
+		} else
+			return false;
 	}
 
 	public void endSession(String username) {
@@ -105,6 +107,7 @@ public class Wordle {
 			else {
 				msg = "you guess right: " + session.getWord();
 				session.close();
+				session.win();
 			}
 
 			session.increaseAttempts();

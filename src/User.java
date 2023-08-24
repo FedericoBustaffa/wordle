@@ -119,7 +119,8 @@ public class User implements Comparable<User>, Serializable {
 		builder.append("wins: " + String.format("%.2f", getWinPercentage()) + "%\n< ");
 		builder.append("last streak: " + lastStreak + "\n< ");
 		builder.append("max streak: " + maxStreak + "\n< ");
-		builder.append("guess distribution: " + Arrays.toString(guessDistribution));
+		builder.append("guess distribution: " + Arrays.toString(guessDistribution) + "\n< ");
+		builder.append("----------------------");
 
 		return builder.toString();
 	}

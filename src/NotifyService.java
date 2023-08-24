@@ -10,12 +10,12 @@ public class NotifyService extends UnicastRemoteObject implements Notify {
 	}
 
 	@Override
-	public String getUsername() throws RemoteException {
+	public synchronized String getUsername() throws RemoteException {
 		return username;
 	}
 
 	@Override
-	public void update(String msg) throws RemoteException {
+	public synchronized void update(String msg) throws RemoteException {
 		System.out.printf("\n< " + msg + "\n> ");
 	}
 
