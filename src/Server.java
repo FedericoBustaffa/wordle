@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server extends Thread {
 
-	// Hash Map of Users
+	// Map of users and the ranking list
 	private ConcurrentHashMap<String, User> users;
 	private List<User> ranking;
 
@@ -69,7 +69,8 @@ public class Server extends Thread {
 
 	public Server() {
 		try {
-			System.out.println("< ----- WORDLE -----");
+			System.out.println("< -------- WORDLE --------");
+
 			// configuration file
 			File config = new File("server_config.txt");
 			if (!config.exists()) {
@@ -106,6 +107,8 @@ public class Server extends Thread {
 			// Json wrapper for backup
 			json_wrapper = new JsonWrapper(BACKUP_USERS);
 			users = json_wrapper.readArray();
+
+			// build the ranking list
 			ranking = Collections.synchronizedList(new ArrayList<User>());
 			if (users != null) {
 				for (User u : users.values())
@@ -145,9 +148,26 @@ public class Server extends Thread {
 			group = new InetSocketAddress(MULTICAST_ADDRESS, MULTICAST_PORT);
 			System.out.println("< MULTICAST address: " + MULTICAST_ADDRESS);
 			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
+			System.out.println("< ------------------------");
 
 			// extractor thread start
 			extractor.start();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void run() {
+		try {
+			Scanner shutdown_button = new Scanner(System.in);
+			shutdown_button.nextLine();
+			shutdown_button.close();
+
+			server_socket_key.channel().close();
+			RUNNING = false;
+			selector.wakeup();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -197,20 +217,6 @@ public class Server extends Thread {
 		}
 	}
 
-	@Override
-	public void run() {
-		try {
-			Scanner shell = new Scanner(System.in);
-			shell.nextLine();
-			shell.close();
-			server_socket_key.channel().close();
-			RUNNING = false;
-			selector.wakeup();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public synchronized boolean isRunning() {
 		return RUNNING;
 	}
@@ -221,30 +227,38 @@ public class Server extends Thread {
 
 	public void shutdown() {
 		try {
-			System.out.println("< closure");
+			System.out.println("< -------- WORDLE CLOSURE --------");
+
+			// threads shutdown
 			pool.shutdown();
 			while (!pool.awaitTermination(60L, TimeUnit.SECONDS))
 				System.out.println("< waiting for thread closure");
 
 			// JSON backup
 			json_wrapper.writeArray(users);
+			System.out.println("< BACKUP DONE");
 
 			// wordle closure
 			extractor.interrupt();
 			extractor.join();
+			System.out.println("< EXTRACTOR CLOSE");
 
 			// RMI closure
 			registry.unbind(Registration.SERVICE);
 			UnicastRemoteObject.unexportObject(registration, false);
+			System.out.println("< RMI REGISTRATION SERVICE CLOSE");
 
 			// TCP closure
 			for (SelectionKey k : selector.keys()) {
 				k.channel().close();
 			}
 			selector.close();
+			System.out.println("< TCP CLOSE");
 
 			// multicast closure
 			multicast.close();
+			System.out.println("< MULTICAST CLOSE");
+			System.out.println("< --------------------------------");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {

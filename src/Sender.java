@@ -63,7 +63,6 @@ public class Sender implements Runnable {
 	}
 
 	private void updateRanking(String msg) {
-		// aggiornamento classifica
 		try {
 			String[] top_three;
 			if (ranking.size() >= 3)
@@ -121,10 +120,10 @@ public class Sender implements Runnable {
 
 			String msg = new String(bytes, 0, length);
 			if (!msg.contains("ERROR")) {
-				if (msg.contains("share"))
-					this.share(msg);
-				else if (msg.contains("right"))
+				if (msg.contains("guess right"))
 					this.updateRanking(msg);
+				else if (msg.contains("share"))
+					this.share(msg);
 				else if (msg.contains("logout"))
 					this.logout(msg);
 				else if (msg.contains("exit")) {

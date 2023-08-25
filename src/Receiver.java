@@ -35,7 +35,7 @@ public class Receiver implements Runnable {
 			return;
 		}
 
-		String commands = "--- HELP ---\n" +
+		String commands = "-------- HELP --------\n" +
 				"< register <username> <password>\n" +
 				"< login <username> <password>\n" +
 				"< play\n" +
@@ -45,7 +45,8 @@ public class Receiver implements Runnable {
 				"< show\n" +
 				"< ranking\n" +
 				"< logout\n" +
-				"< exit";
+				"< exit\n" +
+				"< ---------------------";
 
 		buffer.put(commands.getBytes());
 	}
@@ -73,7 +74,7 @@ public class Receiver implements Runnable {
 				buffer.put("ERROR: user already logged in".getBytes());
 			} else {
 				u.online();
-				buffer.put("login success".getBytes());
+				buffer.put(("SUCCESS: login " + username).getBytes());
 				System.out.println("< " + username + " logged in");
 			}
 		} else {
@@ -100,11 +101,11 @@ public class Receiver implements Runnable {
 
 		User u = users.get(username);
 		if (wordle.startSession(username)) {
-			wordle.getSessions();
+			// wordle.getSessions();
 			u.incGames();
-			buffer.put("game started".getBytes());
+			buffer.put("SUCCESS: game started".getBytes());
 		} else
-			buffer.put("you can't start a new game now".getBytes());
+			buffer.put("ERROR: you can't start a new game now".getBytes());
 	}
 
 	private void guess(String[] cmd) {
@@ -126,7 +127,6 @@ public class Receiver implements Runnable {
 			int attempts = s.getAttempts();
 			User u;
 			if (guess_result.contains("right")) {
-				// parola indovinata
 				u = users.get(username);
 				u.incWins();
 				u.updateGuessDistribution(attempts);
@@ -136,7 +136,7 @@ public class Receiver implements Runnable {
 				u.resetLastStreak();
 			}
 		}
-		wordle.getSessions();
+		// wordle.getSessions();
 		buffer.put((guess_result).getBytes());
 	}
 
@@ -175,7 +175,7 @@ public class Receiver implements Runnable {
 			if (!s.isClose())
 				buffer.put("ERROR: you have to finish the current game".getBytes());
 			else
-				buffer.put(("share: " + username + ", " + s).getBytes());
+				buffer.put(("SUCCESS: share " + username + ", " + s).getBytes());
 		}
 	}
 
@@ -225,7 +225,7 @@ public class Receiver implements Runnable {
 				session.close();
 				u.resetLastStreak();
 			}
-			buffer.put(("logout success: " + username).getBytes());
+			buffer.put(("SUCCESS: logout " + username).getBytes());
 			System.out.println("< " + username + " left");
 		}
 	}
@@ -238,7 +238,7 @@ public class Receiver implements Runnable {
 
 		String username = cmd[1];
 		if (username.equals("null")) {
-			buffer.put("exit success".getBytes());
+			buffer.put("SUCCESS: exit".getBytes());
 			return;
 		}
 
@@ -254,7 +254,7 @@ public class Receiver implements Runnable {
 				u.resetLastStreak();
 			}
 
-			buffer.put(("exit success " + username).getBytes());
+			buffer.put(("SUCCESS: exit " + username).getBytes());
 			System.out.println("< " + username + " left");
 			return;
 		}

@@ -20,7 +20,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Client {
+public class Client extends Thread {
 
 	// UTILITY
 	private String username; // null if not logged
@@ -98,6 +98,8 @@ public class Client {
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
 
 			scores = new ConcurrentLinkedQueue<String>();
+
+			Runtime.getRuntime().addShutdownHook(this);
 		} catch (ConnectException e) {
 			System.out.println("< server not online\n< shutting down");
 			System.exit(1);
@@ -106,6 +108,12 @@ public class Client {
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void run() {
+		// code executed in case of SIGINT
+		this.exit("exit");
 	}
 
 	public void connect() {
@@ -142,7 +150,7 @@ public class Client {
 	private void help(String cmd) {
 		this.send(cmd);
 		String response = this.receive();
-		System.out.println("< HELP\n< " + response);
+		System.out.println("< " + response);
 	}
 
 	public String register(String cmd) {
@@ -196,7 +204,7 @@ public class Client {
 		String response = this.receive();
 		System.out.println("< " + response);
 		if (response.contains("right")) {
-			String word = response.split(" ")[3];
+			String word = response.split(" ")[4];
 			try {
 				URL url = new URL("https://api.mymemory.translated.net/get?q=" +
 						word + "&langpair=en|it");
@@ -323,9 +331,10 @@ public class Client {
 				this.show();
 			else if (first.equals("ranking"))
 				this.ranking(cmd);
-			else if (first.equals("exit"))
+			else if (first.equals("exit")) {
+				Runtime.getRuntime().removeShutdownHook(this);
 				this.exit(cmd);
-			else
+			} else
 				System.out.println("< invalid command");
 		}
 	}

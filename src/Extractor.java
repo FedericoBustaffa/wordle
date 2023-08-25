@@ -15,7 +15,7 @@ public class Extractor implements Runnable {
 				Thread.sleep(timeout);
 			}
 		} catch (InterruptedException e) {
-			System.out.println("< extractor closure");
+
 		}
 	}
 

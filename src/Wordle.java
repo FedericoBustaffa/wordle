@@ -22,12 +22,8 @@ public class Wordle {
 		current_word = null;
 		words = new LinkedList<String>();
 		try (Scanner scanner = new Scanner(file)) {
-			String word;
-			while (scanner.hasNext()) {
-				word = scanner.nextLine();
-				if (word.length() == 10)
-					words.add(word);
-			}
+			while (scanner.hasNext())
+				words.add(scanner.nextLine());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -36,9 +32,11 @@ public class Wordle {
 		random = new Random();
 	}
 
-	public void getSessions() {
-		System.out.println("< " + sessions);
-	}
+	/*
+	 * public void getSessions() {
+	 * System.out.println("< " + sessions);
+	 * }
+	 */
 
 	public Session get(String username) {
 		return sessions.get(username);
@@ -74,8 +72,8 @@ public class Wordle {
 	}
 
 	private String hints(String word, String session_word) {
-		StringBuilder builder = new StringBuilder(word);
-		builder.append("\n< ");
+		StringBuilder builder = new StringBuilder("WORD: " + word);
+		builder.append("\n< HINT: ");
 		for (int i = 0; i < 10; i++) {
 			if (word.charAt(i) == session_word.charAt(i))
 				builder.append("+");
@@ -105,7 +103,7 @@ public class Wordle {
 			if (!word.equals(session.getWord()))
 				msg = hints(word, session.getWord());
 			else {
-				msg = "you guess right: " + session.getWord();
+				msg = "SUCCESS: you guess right: " + session.getWord();
 				session.close();
 				session.win();
 			}

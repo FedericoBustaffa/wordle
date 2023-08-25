@@ -114,6 +114,7 @@ public class User implements Comparable<User>, Serializable {
 
 	public String statistics() {
 		StringBuilder builder = new StringBuilder();
+		builder.append("user: " + username + "\n< ");
 		builder.append("score: " + String.format("%.2f", getScore()) + "\n< ");
 		builder.append("games: " + games + "\n< ");
 		builder.append("wins: " + String.format("%.2f", getWinPercentage()) + "%\n< ");
@@ -143,7 +144,7 @@ public class User implements Comparable<User>, Serializable {
 		else if (score == other.score)
 			return username.compareTo(other.username);
 		else
-			return 1;
+			return 0;
 	}
 
 	@Override
