@@ -90,7 +90,7 @@ public class Wordle {
 		Session session = sessions.get(username);
 		if (!sessions.containsKey(username))
 			return "ERROR: you have to start a new game before";
-		else if (session.getAttempts() >= 12)
+		else if (session.getAttempts() >= 2)
 			return "ERROR: attempts terminated";
 		else if (session.isClose())
 			return "ERROR: your session is closed";
@@ -100,17 +100,16 @@ public class Wordle {
 			return "ERROR: word length must be 10";
 		else {
 			String msg;
-			if (!word.equals(session.getWord()))
-				msg = hints(word, session.getWord());
-			else {
+			session.increaseAttempts();
+			if (word.equals(session.getWord())) {
 				msg = "SUCCESS: you guess right: " + session.getWord();
 				session.close();
 				session.win();
-			}
-
-			session.increaseAttempts();
-			if (session.getAttempts() >= 12)
+			} else if (session.getAttempts() >= 2) {
+				msg = "ERROR: attempts terminated for " + session.getWord();
 				session.close();
+			} else
+				msg = hints(word, session.getWord());
 
 			return msg;
 		}

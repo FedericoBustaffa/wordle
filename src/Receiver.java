@@ -131,7 +131,7 @@ public class Receiver implements Runnable {
 				u.incWins();
 				u.updateGuessDistribution(attempts);
 				wordle.endSession(username);
-			} else if (attempts >= 12) {
+			} else if (attempts >= 2) {
 				u = users.get(username);
 				u.resetLastStreak();
 			}

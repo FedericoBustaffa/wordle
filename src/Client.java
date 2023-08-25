@@ -203,8 +203,9 @@ public class Client extends Thread {
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
-		if (response.contains("right")) {
-			String word = response.split(" ")[4];
+		if (response.contains("right") || response.contains("attempts terminated for")) {
+			String[] split = response.split(" ");
+			String word = split[split.length - 1];
 			try {
 				URL url = new URL("https://api.mymemory.translated.net/get?q=" +
 						word + "&langpair=en|it");

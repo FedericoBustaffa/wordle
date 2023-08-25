@@ -53,7 +53,7 @@ public class Sender implements Runnable {
 	private void share(String msg) {
 		try {
 			if (!msg.contains("ERROR")) {
-				msg = msg.substring(7);
+				msg = msg.substring(15);
 				DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
 				multicast.send(packet);
 			}
