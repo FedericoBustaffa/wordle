@@ -32,7 +32,7 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 			users.put(username, user);
 			ranking.add(user);
 			System.out.println("< new user: " + username + " has been registered");
-			return "< successful registration";
+			return "< SUCCESS: registration " + username;
 		}
 	}
 
