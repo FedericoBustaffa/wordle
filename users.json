@@ -13,7 +13,7 @@
   "password" : "ch14r4",
   "online" : false,
   "score" : 0.0,
-  "games" : 0,
+  "games" : 1,
   "wins" : 0,
   "lastStreak" : 0,
   "maxStreak" : 0,
@@ -32,10 +32,10 @@
   "username" : "fede",
   "password" : "f3d3",
   "online" : false,
-  "score" : 1.205128205128205,
-  "games" : 15,
-  "wins" : 8,
-  "lastStreak" : 0,
+  "score" : 1.358974358974359,
+  "games" : 16,
+  "wins" : 9,
+  "lastStreak" : 1,
   "maxStreak" : 3,
-  "guessDistribution" : [ 6, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "guessDistribution" : [ 7, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 } ]
