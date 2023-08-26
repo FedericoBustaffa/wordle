@@ -1,0 +1,9 @@
+{
+  "users_backup_file": "users.json",
+  "words_file": "words.txt",
+  "rmi_port": 1500,
+  "tcp_port": 2000,
+  "multicast_address": "239.255.255.1",
+  "multicast_port": 3000,
+  "extraction_timeout": 30000
+}

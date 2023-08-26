@@ -29,6 +29,7 @@ public class Client extends Thread {
 	private JsonWrapper json_wrapper;
 
 	// CONFIGURATION
+	private static final String CLIENT_CONFIG = "client_config.json";
 	private int RMI_PORT = 1500;
 	private int TCP_PORT = 2000;
 	private String MULTICAST_ADDRESS;
@@ -58,32 +59,19 @@ public class Client extends Thread {
 			input = new Scanner(System.in);
 			json_wrapper = new JsonWrapper();
 
-			// configuration file
-			File config = new File("client_config.txt");
+			// configuration file parsing
+			File config = new File(CLIENT_CONFIG);
 			if (!config.exists()) {
 				System.out.println("ERROR: server configuration file not found");
 				System.exit(1);
 			}
+			json_wrapper = new JsonWrapper(config);
+			String conf = json_wrapper.getContent();
 
-			// configuration file parsing
-			Scanner scanner = new Scanner(config);
-			String[] line;
-			while (scanner.hasNext()) {
-				line = scanner.nextLine().split("=");
-				if (line[0].equals("RMI_PORT"))
-					RMI_PORT = Integer.parseInt(line[1]);
-				else if (line[0].equals("TCP_PORT"))
-					TCP_PORT = Integer.parseInt(line[1]);
-				else if (line[0].equals("MULTICAST_ADDRESS"))
-					MULTICAST_ADDRESS = line[1];
-				else if (line[0].equals("MULTICAST_PORT"))
-					MULTICAST_PORT = Integer.parseInt(line[1]);
-				else {
-					System.out.println("< ERROR: configuration file corrupted");
-					System.exit(1);
-				}
-			}
-			scanner.close();
+			RMI_PORT = json_wrapper.getInteger(conf, "rmi_port");
+			TCP_PORT = json_wrapper.getInteger(conf, "tcp_port");
+			MULTICAST_ADDRESS = json_wrapper.getString(conf, "multicast_address");
+			MULTICAST_PORT = json_wrapper.getInteger(conf, "multicast_port");
 
 			// RMI
 			registry = LocateRegistry.getRegistry(RMI_PORT);
@@ -215,7 +203,7 @@ public class Client extends Thread {
 				byte[] buffer = new byte[translator.getContentLength()];
 				int count = is.read(buffer);
 				String content = new String(buffer, 0, count);
-				String translation = json_wrapper.getNode(content, "translatedText");
+				String translation = json_wrapper.getString(content, "translatedText");
 				System.out.println("< translation: " + translation);
 			} catch (IOException e) {
 				e.printStackTrace();

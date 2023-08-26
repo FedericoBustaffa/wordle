@@ -1,0 +1,52 @@
+{
+  // Usare IntelliSense per informazioni sui possibili attributi.
+  // Al passaggio del mouse vengono visualizzate le descrizioni degli attributi esistenti.
+  // Per altre informazioni, visitare: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Current File",
+      "request": "launch",
+      "mainClass": "${file}"
+    },
+    {
+      "type": "java",
+      "name": "Client",
+      "request": "launch",
+      "mainClass": "Client",
+      "projectName": "wordle_7cd78a68"
+    },
+    {
+      "type": "java",
+      "name": "ClientStress",
+      "request": "launch",
+      "mainClass": "ClientStress",
+      "projectName": "wordle_7cd78a68",
+      "args": "fede f3d3 marghi m4rgh1"
+    },
+    {
+      "type": "java",
+      "name": "ClientStress2",
+      "request": "launch",
+      "mainClass": "ClientStress",
+      "projectName": "wordle_7cd78a68",
+      "args": "betta b3tt4 andrea 4ndr34"
+    },
+    {
+      "type": "java",
+      "name": "ClientStress3",
+      "request": "launch",
+      "mainClass": "ClientStress",
+      "projectName": "wordle_7cd78a68",
+      "args": "chiara ch14r4 ciccio c1cc10"
+    },
+    {
+      "type": "java",
+      "name": "Server",
+      "request": "launch",
+      "mainClass": "Server",
+      "projectName": "wordle_7cd78a68"
+    }
+  ]
+}

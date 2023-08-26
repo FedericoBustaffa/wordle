@@ -1,0 +1,6 @@
+{
+  "rmi_port": 1500,
+  "tcp_port": 2000,
+  "multicast_address": "239.255.255.1",
+  "multicast_port": 3000
+}

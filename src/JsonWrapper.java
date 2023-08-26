@@ -1,11 +1,13 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,19 +21,11 @@ public class JsonWrapper {
     private JsonGenerator generator;
     private JsonParser parser;
 
-    public JsonWrapper(String filepath) {
-        try {
-            if (filepath != null) {
-                file = new File(filepath);
-                if (!file.exists())
-                    file.createNewFile();
-            }
-            factory = new JsonFactory();
-            mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public JsonWrapper(File file) {
+        this.file = file;
+        factory = new JsonFactory();
+        mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
     public JsonWrapper() {
@@ -81,23 +75,67 @@ public class JsonWrapper {
         return null;
     }
 
-    public String getNode(String content, String field) {
+    public String getContent() {
         try {
-            JsonNode node = mapper.readTree(content);
-            if (node.has(field)) {
-                return node.get(field).toString();
-            } else if (node.isObject()) {
-                for (JsonNode n : node) {
-                    return getNode(n.toString(), field);
-                }
-            }
-        } catch (
-
-        IOException e) {
+            if (file == null)
+                return null;
+            else
+                return mapper.readTree(file).toString();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    public String getString(String content, String field) {
+        try {
+            JsonNode node = mapper.readTree(content);
+            if (node.has(field)) {
+                return node.get(field).asText();
+            } else if (node.isObject()) {
+                for (JsonNode n : node)
+                    return getString(n.toString(), field);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public int getInteger(String content, String field) throws NoSuchElementException {
+        try {
+            JsonNode node = mapper.readTree(content);
+            if (node.has(field)) {
+                return node.get(field).asInt();
+            } else if (node.isObject()) {
+                for (JsonNode n : node)
+                    return getInteger(n.toString(), field);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        throw new NoSuchElementException();
+    }
+
+    public long getLong(String content, String field) throws NoSuchElementException {
+        try {
+            JsonNode node = mapper.readTree(content);
+            if (node.has(field)) {
+                return node.get(field).asInt();
+            } else if (node.isObject()) {
+                for (JsonNode n : node)
+                    return getInteger(n.toString(), field);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        throw new NoSuchElementException();
     }
 
 }

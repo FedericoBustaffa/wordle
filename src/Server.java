@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,7 +41,8 @@ public class Server extends Thread {
 	private JsonWrapper json_wrapper;
 
 	// CONFIGURATION
-	private String BACKUP_USERS;
+	private static final String SERVER_CONFIG = "server_config.json";
+	private String USERS_BACKUP;
 	private String WORDS;
 	private int RMI_PORT;
 	private int TCP_PORT;
@@ -71,41 +73,30 @@ public class Server extends Thread {
 		try {
 			System.out.println("< -------- WORDLE --------");
 
-			// configuration file
-			File config = new File("server_config.txt");
+			// configuration file parsing
+			File config = new File(SERVER_CONFIG);
 			if (!config.exists()) {
-				System.out.println("ERROR: server configuration file not found");
+				System.out.println("< ERROR: server configuration file not found");
 				System.exit(1);
 			}
 
-			// configuration file parsing
-			Scanner scanner = new Scanner(config);
-			String[] line;
-			while (scanner.hasNext()) {
-				line = scanner.nextLine().split("=");
-				if (line[0].equals("BACKUP_USERS"))
-					BACKUP_USERS = line[1];
-				else if (line[0].equals("WORDS"))
-					WORDS = line[1];
-				else if (line[0].equals("RMI_PORT"))
-					RMI_PORT = Integer.parseInt(line[1]);
-				else if (line[0].equals("TCP_PORT"))
-					TCP_PORT = Integer.parseInt(line[1]);
-				else if (line[0].equals("MULTICAST_ADDRESS"))
-					MULTICAST_ADDRESS = line[1];
-				else if (line[0].equals("MULTICAST_PORT"))
-					MULTICAST_PORT = Integer.parseInt(line[1]);
-				else if (line[0].equals("EXTRACTION_TIMEOUT"))
-					EXTRACTION_TIMEOUT = Long.parseLong(line[1]);
-				else {
-					System.out.println("< ERROR: configuration file corrupted");
-					System.exit(1);
-				}
-			}
-			scanner.close();
+			json_wrapper = new JsonWrapper(new File(SERVER_CONFIG));
+			String conf = json_wrapper.getContent();
+
+			USERS_BACKUP = json_wrapper.getString(conf, "users_backup_file");
+			WORDS = json_wrapper.getString(conf, "words_file");
+			RMI_PORT = json_wrapper.getInteger(conf, "rmi_port");
+			TCP_PORT = json_wrapper.getInteger(conf, "tcp_port");
+			MULTICAST_ADDRESS = json_wrapper.getString(conf, "multicast_address");
+			MULTICAST_PORT = json_wrapper.getInteger(conf, "multicast_port");
+			EXTRACTION_TIMEOUT = json_wrapper.getLong(conf, "extraction_timeout");
 
 			// Json wrapper for backup
-			json_wrapper = new JsonWrapper(BACKUP_USERS);
+			File backup = new File(USERS_BACKUP);
+			if (!backup.exists()) {
+				backup.createNewFile();
+			}
+			json_wrapper = new JsonWrapper(backup);
 			users = json_wrapper.readArray();
 
 			// build the ranking list
@@ -152,7 +143,8 @@ public class Server extends Thread {
 
 			// extractor thread start
 			extractor.start();
-
+		} catch (NoSuchElementException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
