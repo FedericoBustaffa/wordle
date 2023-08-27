@@ -138,6 +138,8 @@ public class Server extends Thread {
 			group = new InetSocketAddress(MULTICAST_ADDRESS, MULTICAST_PORT);
 			System.out.println("< MULTICAST address: " + MULTICAST_ADDRESS);
 			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
+
+			System.out.println("< premere INVIO per terminare l'esecuzione");
 			System.out.println("< ------------------------");
 
 			// extractor thread start
@@ -212,7 +214,7 @@ public class Server extends Thread {
 		return RUNNING;
 	}
 
-	public synchronized int getActiveConnections() {
+	public int getActiveConnections() {
 		return ACTIVE_CONNECTIONS.get();
 	}
 

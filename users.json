@@ -1,4 +1,14 @@
 [ {
+  "username" : "chiara",
+  "password" : "ch14r4",
+  "online" : false,
+  "score" : 0.15384615384615385,
+  "games" : 1,
+  "wins" : 1,
+  "lastStreak" : 1,
+  "maxStreak" : 1,
+  "guessDistribution" : [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+}, {
   "username" : "betta",
   "password" : "b3tt4",
   "online" : false,
