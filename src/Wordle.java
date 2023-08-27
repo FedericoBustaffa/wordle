@@ -63,7 +63,7 @@ public class Wordle {
 			return false;
 	}
 
-	public void endSession(String username) {
+	public void closeSession(String username) {
 		Session session = sessions.get(username);
 		if (session == null)
 			return;
