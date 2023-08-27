@@ -1,9 +1,9 @@
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Wordle {
@@ -20,7 +20,7 @@ public class Wordle {
 		}
 
 		current_word = null;
-		words = new LinkedList<String>();
+		words = new Vector<String>();
 		try (Scanner scanner = new Scanner(file)) {
 			while (scanner.hasNext())
 				words.add(scanner.nextLine());

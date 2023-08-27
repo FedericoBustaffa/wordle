@@ -17,8 +17,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Client extends Thread {
 
@@ -50,7 +51,7 @@ public class Client extends Thread {
 	private MulticastSocket multicast;
 	private InetAddress group;
 	private MulticastReceiver mc_receiver;
-	private ConcurrentLinkedQueue<String> scores;
+	private Queue<String> sessions;
 
 	public Client() {
 		try {
@@ -85,7 +86,7 @@ public class Client extends Thread {
 			multicast = new MulticastSocket(MULTICAST_PORT);
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
 
-			scores = new ConcurrentLinkedQueue<String>();
+			sessions = new LinkedList<String>();
 
 			Runtime.getRuntime().addShutdownHook(this);
 		} catch (ConnectException e) {
@@ -171,7 +172,7 @@ public class Client extends Thread {
 				registration.registerForNotification(notify_service);
 
 				multicast.joinGroup(group);
-				mc_receiver = new MulticastReceiver(multicast, scores, username);
+				mc_receiver = new MulticastReceiver(multicast, sessions, username);
 				mc_receiver.start();
 			}
 		} catch (RemoteException e) {
@@ -224,13 +225,13 @@ public class Client extends Thread {
 	}
 
 	private void show() {
-		if (scores.size() == 0) {
+		if (sessions.size() == 0) {
 			System.out.println("< there are no notifications");
 			return;
 		}
 
-		System.out.println("< ---- SCORES ----");
-		for (String s : scores)
+		System.out.println("< ---- sessions ----");
+		for (String s : sessions)
 			System.out.println("< " + s);
 		System.out.println("< ----------------");
 	}
@@ -255,7 +256,7 @@ public class Client extends Thread {
 
 				mc_receiver.join();
 				multicast.leaveGroup(group);
-				scores.clear();
+				sessions.clear();
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();

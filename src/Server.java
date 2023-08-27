@@ -13,7 +13,6 @@ import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -100,7 +99,7 @@ public class Server extends Thread {
 			users = json_wrapper.readArray();
 
 			// build the ranking list
-			ranking = Collections.synchronizedList(new ArrayList<User>());
+			ranking = Collections.synchronizedList(new LinkedList<User>());
 			if (users != null) {
 				for (User u : users.values())
 					ranking.add(u);
