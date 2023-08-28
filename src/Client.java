@@ -20,6 +20,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Client extends Thread {
@@ -31,7 +32,6 @@ public class Client extends Thread {
 	private JsonWrapper json_wrapper;
 
 	// CONFIGURATION
-	private static final String CLIENT_CONFIG = "client_config.json";
 	private int RMI_PORT = 1500;
 	private int TCP_PORT = 2000;
 	private String MULTICAST_ADDRESS;
@@ -54,7 +54,7 @@ public class Client extends Thread {
 	private MulticastReceiver mc_receiver;
 	private List<String> sessions;
 
-	public Client() {
+	public Client(String config_file) {
 		try {
 			username = null;
 			done = false;
@@ -62,7 +62,7 @@ public class Client extends Thread {
 			json_wrapper = new JsonWrapper();
 
 			// configuration file parsing
-			File config = new File(CLIENT_CONFIG);
+			File config = new File(config_file);
 			if (!config.exists()) {
 				System.out.println("ERROR: server configuration file not found");
 				System.exit(1);
@@ -97,6 +97,10 @@ public class Client extends Thread {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
 			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			System.out.println("< invalid client configuration file" +
+					e.getLocalizedMessage() + " field not found");
+			System.exit(1);
 		}
 	}
 

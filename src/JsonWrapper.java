@@ -90,7 +90,7 @@ public class JsonWrapper {
         return null;
     }
 
-    public String getString(String content, String field) {
+    public String getString(String content, String field) throws NoSuchElementException {
         try {
             JsonNode node = mapper.readTree(content);
             if (node.has(field)) {
@@ -103,7 +103,7 @@ public class JsonWrapper {
             e.printStackTrace();
         }
 
-        return null;
+        throw new NoSuchElementException(field);
     }
 
     public int getInteger(String content, String field) throws NoSuchElementException {
@@ -119,7 +119,7 @@ public class JsonWrapper {
             e.printStackTrace();
         }
 
-        throw new NoSuchElementException();
+        throw new NoSuchElementException(field);
     }
 
     public long getLong(String content, String field) throws NoSuchElementException {
@@ -135,7 +135,7 @@ public class JsonWrapper {
             e.printStackTrace();
         }
 
-        throw new NoSuchElementException();
+        throw new NoSuchElementException(field);
     }
 
 }

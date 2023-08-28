@@ -1,6 +1,10 @@
 public class ClientMain {
 	public static void main(String[] args) {
-		Client client = new Client();
+		if (args.length != 1) {
+			System.out.println("< USAGE: java ClientMain <config_file>");
+			System.exit(1);
+		}
+		Client client = new Client(args[0]);
 		client.shell();
 		client.shutdown();
 	}

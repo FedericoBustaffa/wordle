@@ -40,7 +40,6 @@ public class Server extends Thread {
 	private JsonWrapper json_wrapper;
 
 	// CONFIGURATION
-	private static final String SERVER_CONFIG = "server_config.json";
 	private String USERS_BACKUP;
 	private String WORDS;
 	private int RMI_PORT;
@@ -68,18 +67,18 @@ public class Server extends Thread {
 	private MulticastSocket multicast;
 	private SocketAddress group;
 
-	public Server() {
+	public Server(String config_file) {
 		try {
 			System.out.println("< -------- WORDLE --------");
 
 			// configuration file parsing
-			File config = new File(SERVER_CONFIG);
+			File config = new File(config_file);
 			if (!config.exists()) {
 				System.out.println("< ERROR: server configuration file not found");
 				System.exit(1);
 			}
 
-			json_wrapper = new JsonWrapper(new File(SERVER_CONFIG));
+			json_wrapper = new JsonWrapper(config);
 			String conf = json_wrapper.getContent();
 
 			USERS_BACKUP = json_wrapper.getString(conf, "users_backup_file");
@@ -145,7 +144,9 @@ public class Server extends Thread {
 			// extractor thread start
 			extractor.start();
 		} catch (NoSuchElementException e) {
-			e.printStackTrace();
+			System.out.println("< invalid server configuration file: " +
+					e.getLocalizedMessage() + " field not found");
+			System.exit(1);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
