@@ -1,15 +1,15 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
-import java.util.Queue;
+import java.util.List;
 
 public class MulticastReceiver extends Thread {
 
 	private MulticastSocket multicast;
-	private Queue<String> sessions;
+	private List<String> sessions;
 	private String username;
 
-	public MulticastReceiver(MulticastSocket multicast, Queue<String> sessions, String username) {
+	public MulticastReceiver(MulticastSocket multicast, List<String> sessions, String username) {
 		this.multicast = multicast;
 		this.sessions = sessions;
 		this.username = username;

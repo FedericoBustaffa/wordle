@@ -17,8 +17,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Collections;
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.List;
 import java.util.Scanner;
 
 public class Client extends Thread {
@@ -51,7 +52,7 @@ public class Client extends Thread {
 	private MulticastSocket multicast;
 	private InetAddress group;
 	private MulticastReceiver mc_receiver;
-	private Queue<String> sessions;
+	private List<String> sessions;
 
 	public Client() {
 		try {
@@ -86,7 +87,7 @@ public class Client extends Thread {
 			multicast = new MulticastSocket(MULTICAST_PORT);
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
 
-			sessions = new LinkedList<String>();
+			sessions = Collections.synchronizedList(new LinkedList<String>());
 
 			Runtime.getRuntime().addShutdownHook(this);
 		} catch (ConnectException e) {
@@ -188,6 +189,23 @@ public class Client extends Thread {
 		System.out.println("< " + response);
 	}
 
+	private void translate(String word) {
+		try {
+			URL url = new URL("https://api.mymemory.translated.net/get?q=" +
+					word + "&langpair=en|it");
+			HttpURLConnection translator = (HttpURLConnection) url.openConnection();
+			translator.setRequestMethod("GET");
+			BufferedInputStream is = new BufferedInputStream(translator.getInputStream());
+			byte[] buffer = new byte[translator.getContentLength()];
+			int count = is.read(buffer);
+			String content = new String(buffer, 0, count);
+			String translation = json_wrapper.getString(content, "translatedText");
+			System.out.println("< translation: " + translation);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void guess(String cmd) {
 		this.send(cmd + " " + username);
 		String response = this.receive();
@@ -195,20 +213,7 @@ public class Client extends Thread {
 		if (response.contains("right") || response.contains("attempts terminated for")) {
 			String[] split = response.split(" ");
 			String word = split[split.length - 1];
-			try {
-				URL url = new URL("https://api.mymemory.translated.net/get?q=" +
-						word + "&langpair=en|it");
-				HttpURLConnection translator = (HttpURLConnection) url.openConnection();
-				translator.setRequestMethod("GET");
-				BufferedInputStream is = new BufferedInputStream(translator.getInputStream());
-				byte[] buffer = new byte[translator.getContentLength()];
-				int count = is.read(buffer);
-				String content = new String(buffer, 0, count);
-				String translation = json_wrapper.getString(content, "translatedText");
-				System.out.println("< translation: " + translation);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			translate(word);
 		}
 	}
 
@@ -257,6 +262,10 @@ public class Client extends Thread {
 				mc_receiver.join();
 				multicast.leaveGroup(group);
 				sessions.clear();
+
+				String[] parse = response.split(" ");
+				if (parse.length == 4)
+					translate(parse[3]);
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -283,6 +292,10 @@ public class Client extends Thread {
 					mc_receiver.join();
 					multicast.leaveGroup(group);
 				}
+
+				String[] parse = response.split(" ");
+				if (parse.length == 4)
+					translate(parse[3]);
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();

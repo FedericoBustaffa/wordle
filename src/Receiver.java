@@ -220,13 +220,14 @@ public class Receiver implements Runnable {
 			buffer.put("ERROR: not logged yet".getBytes());
 		} else {
 			u.offline();
+			System.out.println("< " + username + " left");
 			Session session = wordle.get(username);
 			if (session != null && !session.isClose()) {
 				session.close();
 				u.resetLastStreak();
-			}
-			buffer.put(("SUCCESS: logout " + username).getBytes());
-			System.out.println("< " + username + " left");
+				buffer.put(("SUCCESS: logout " + username + " " + session.getWord()).getBytes());
+			} else
+				buffer.put(("SUCCESS: logout " + username).getBytes());
 		}
 	}
 
@@ -248,15 +249,14 @@ public class Receiver implements Runnable {
 			return;
 		} else {
 			u.offline();
+			System.out.println("< " + username + " left");
 			Session session = wordle.get(username);
 			if (session != null && !session.isClose()) {
 				session.close();
 				u.resetLastStreak();
-			}
-
-			buffer.put(("SUCCESS: exit " + username).getBytes());
-			System.out.println("< " + username + " left");
-			return;
+				buffer.put(("SUCCESS: exit " + username + " " + session.getWord()).getBytes());
+			} else
+				buffer.put(("SUCCESS: exit " + username).getBytes());
 		}
 	}
 
