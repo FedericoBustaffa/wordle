@@ -32,8 +32,10 @@ public class Client extends Thread {
 	private JsonWrapper json_wrapper;
 
 	// CONFIGURATION
-	private int RMI_PORT = 1500;
-	private int TCP_PORT = 2000;
+	private String RMI_ADDRESS;
+	private int RMI_PORT;
+	private String TCP_ADDRESS;
+	private int TCP_PORT;
 	private String MULTICAST_ADDRESS;
 	private int MULTICAST_PORT;
 
@@ -70,25 +72,32 @@ public class Client extends Thread {
 			json_wrapper = new JsonWrapper(config);
 			String conf = json_wrapper.getContent();
 
+			RMI_ADDRESS = json_wrapper.getString(conf, "rmi_address");
 			RMI_PORT = json_wrapper.getInteger(conf, "rmi_port");
+			TCP_ADDRESS = json_wrapper.getString(conf, "tcp_address");
 			TCP_PORT = json_wrapper.getInteger(conf, "tcp_port");
 			MULTICAST_ADDRESS = json_wrapper.getString(conf, "multicast_address");
 			MULTICAST_PORT = json_wrapper.getInteger(conf, "multicast_port");
 
 			// RMI
-			registry = LocateRegistry.getRegistry(RMI_PORT);
+			registry = LocateRegistry.getRegistry(RMI_ADDRESS, RMI_PORT);
 			registration = (Registration) registry.lookup(Registration.SERVICE);
 
 			// TCP
-			tcp_address = new InetSocketAddress(InetAddress.getLocalHost(), TCP_PORT);
+			InetAddress remote_tcp;
+			if (TCP_ADDRESS.equals("localhost"))
+				remote_tcp = InetAddress.getLocalHost();
+			else
+				remote_tcp = InetAddress.getByName(TCP_ADDRESS);
+			tcp_address = new InetSocketAddress(remote_tcp, TCP_PORT);
 			socket = new Socket();
 
 			// MULTICAST
 			multicast = new MulticastSocket(MULTICAST_PORT);
 			group = InetAddress.getByName(MULTICAST_ADDRESS);
-
 			sessions = Collections.synchronizedList(new LinkedList<String>());
 
+			// ShutdownHook for SIGINT capture
 			Runtime.getRuntime().addShutdownHook(this);
 		} catch (ConnectException e) {
 			System.out.println("< server not online\n< shutting down");
