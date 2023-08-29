@@ -2,12 +2,12 @@
   "username" : "chiara",
   "password" : "ch14r4",
   "online" : false,
-  "score" : 0.15384615384615385,
-  "games" : 1,
-  "wins" : 1,
-  "lastStreak" : 1,
-  "maxStreak" : 1,
-  "guessDistribution" : [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "score" : 0.3076923076923077,
+  "games" : 2,
+  "wins" : 2,
+  "lastStreak" : 2,
+  "maxStreak" : 2,
+  "guessDistribution" : [ 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 }, {
   "username" : "betta",
   "password" : "b3tt4",
