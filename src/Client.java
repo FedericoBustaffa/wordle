@@ -11,6 +11,7 @@ import java.net.MulticastSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -26,7 +27,7 @@ import java.util.Scanner;
 public class Client extends Thread {
 
 	// UTILITY
-	private String username; // null if not logged
+	private String username; // null se non si è loggati
 	private boolean done;
 	private Scanner input;
 	private JsonWrapper json_wrapper;
@@ -99,8 +100,14 @@ public class Client extends Thread {
 
 			// ShutdownHook for SIGINT capture
 			Runtime.getRuntime().addShutdownHook(this);
+		} catch (java.rmi.UnknownHostException e) {
+			System.out.println("< server RMI not found");
+			System.exit(1);
 		} catch (ConnectException e) {
 			System.out.println("< server not online\n< shutting down");
+			System.exit(1);
+		} catch (UnknownHostException e) {
+			System.out.println("< server TCP not found");
 			System.exit(1);
 		} catch (IOException e) {
 			e.printStackTrace();

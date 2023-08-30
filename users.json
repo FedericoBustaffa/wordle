@@ -12,12 +12,12 @@
   "username" : "betta",
   "password" : "b3tt4",
   "online" : false,
-  "score" : 0.7692307692307693,
-  "games" : 6,
-  "wins" : 5,
-  "lastStreak" : 3,
-  "maxStreak" : 3,
-  "guessDistribution" : [ 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  "score" : 1.0769230769230769,
+  "games" : 8,
+  "wins" : 7,
+  "lastStreak" : 5,
+  "maxStreak" : 5,
+  "guessDistribution" : [ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 }, {
   "username" : "fede",
   "password" : "f3d3",
