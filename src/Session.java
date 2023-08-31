@@ -36,10 +36,15 @@ public class Session {
 		this.word = word;
 		this.attempts = 0;
 		this.close = false;
+		this.guessed = false;
 	}
 
 	public void win() {
 		this.guessed = true;
+	}
+
+	public void lose() {
+		this.guessed = false;
 	}
 
 	@Override

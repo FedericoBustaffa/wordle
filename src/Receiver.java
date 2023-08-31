@@ -223,6 +223,7 @@ public class Receiver implements Runnable {
 			System.out.println("< " + username + " left");
 			Session session = wordle.get(username);
 			if (session != null && !session.isClose()) {
+				session.lose();
 				session.close();
 				u.resetLastStreak();
 				buffer.put(("SUCCESS: logout " + username + " " + session.getWord()).getBytes());
@@ -252,6 +253,7 @@ public class Receiver implements Runnable {
 			System.out.println("< " + username + " left");
 			Session session = wordle.get(username);
 			if (session != null && !session.isClose()) {
+				session.lose();
 				session.close();
 				u.resetLastStreak();
 				buffer.put(("SUCCESS: exit " + username + " " + session.getWord()).getBytes());
