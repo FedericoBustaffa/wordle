@@ -69,7 +69,7 @@ public class Server extends Thread {
 
 	public Server(String config_file) {
 		try {
-			System.out.println("< -------- WORDLE --------");
+			System.out.println("< -------------- WORDLE --------------");
 
 			// parsing del file di configurazione
 			File config = new File(config_file);
@@ -106,8 +106,8 @@ public class Server extends Thread {
 			Collections.sort(ranking);
 
 			// Wordle init
-			wordle = new Wordle(new File(WORDS));
-			extractor = new Thread(new Extractor(wordle, EXTRACTION_TIMEOUT));
+			wordle = new Wordle(new File(WORDS), EXTRACTION_TIMEOUT);
+			extractor = new Thread(wordle);
 
 			// RMI
 			notifiers = Collections.synchronizedList(new LinkedList<Notify>());
@@ -139,7 +139,7 @@ public class Server extends Thread {
 			System.out.println("< MULTICAST port: " + MULTICAST_PORT);
 
 			System.out.println("< premere INVIO per terminare l'esecuzione");
-			System.out.println("< ------------------------");
+			System.out.println("< ------------------------------------");
 
 			// extractor thread start
 			extractor.start();
@@ -221,7 +221,7 @@ public class Server extends Thread {
 
 	public void shutdown() {
 		try {
-			System.out.println("< -------- WORDLE CLOSURE --------");
+			System.out.println("< ---------- WORDLE CLOSURE ----------");
 
 			// threads shutdown
 			pool.shutdown();
@@ -252,7 +252,7 @@ public class Server extends Thread {
 			// multicast closure
 			multicast.close();
 			System.out.println("< MULTICAST CLOSE");
-			System.out.println("< --------------------------------");
+			System.out.println("< ------------------------------------");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {

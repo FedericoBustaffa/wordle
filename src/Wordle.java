@@ -6,14 +6,15 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Wordle {
+public class Wordle implements Runnable {
 
-	String current_word;
-	List<String> words;
-	ConcurrentHashMap<String, Session> sessions;
-	Random random;
+	private String current_word;
+	private List<String> words;
+	private ConcurrentHashMap<String, Session> sessions;
+	private long EXTRACTION_TIMEOUT;
+	private Random random;
 
-	public Wordle(File file) {
+	public Wordle(File file, long EXTRACTION_TIMEOUT) {
 		if (!file.exists()) {
 			System.out.println("< words file not found");
 			System.exit(1);
@@ -29,6 +30,7 @@ public class Wordle {
 		}
 
 		sessions = new ConcurrentHashMap<String, Session>();
+		this.EXTRACTION_TIMEOUT = EXTRACTION_TIMEOUT;
 		random = new Random();
 	}
 
@@ -106,6 +108,17 @@ public class Wordle {
 				msg = hints(word, session.getWord());
 
 			return msg;
+		}
+	}
+
+	@Override
+	public void run() {
+		try {
+			while (!Thread.currentThread().isInterrupted()) {
+				extractWord();
+				Thread.sleep(EXTRACTION_TIMEOUT);
+			}
+		} catch (InterruptedException ignored) {
 		}
 	}
 

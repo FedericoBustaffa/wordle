@@ -35,7 +35,7 @@ public class Receiver implements Runnable {
 			return;
 		}
 
-		String commands = "-------- HELP --------\n" +
+		String commands = "--------------- HELP ---------------\n" +
 				"< register <username> <password>\n" +
 				"< login <username> <password>\n" +
 				"< play\n" +
@@ -46,7 +46,7 @@ public class Receiver implements Runnable {
 				"< ranking\n" +
 				"< logout\n" +
 				"< exit\n" +
-				"< ---------------------";
+				"< ------------------------------------";
 
 		buffer.put(commands.getBytes());
 	}
@@ -189,10 +189,10 @@ public class Receiver implements Runnable {
 			return;
 		}
 		StringBuilder builder = new StringBuilder();
-		builder.append(" ----- RANKING LIST -----\n");
+		builder.append("----------- RANKING LIST -----------\n");
 		for (User u : ranking)
 			builder.append("< " + u + "\n");
-		builder.append("< -------------------------");
+		builder.append("< ------------------------------------");
 
 		buffer.put(builder.toString().getBytes());
 	}

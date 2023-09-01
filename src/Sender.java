@@ -76,13 +76,15 @@ public class Sender implements Runnable {
 			Collections.sort(ranking);
 			String username;
 			String msg = "";
+			boolean send = false;
 			for (int i = 0; i < top_three.length; i++) {
 				username = ranking.get(i).getUsername();
+				msg = msg + username + " ";
 				if (!username.equals(top_three[i]))
-					msg = msg + username + " ";
+					send = true;
 			}
 
-			if (!msg.equals("")) {
+			if (send) {
 				for (int j = 0; j < notifiers.size(); j++)
 					notifiers.get(j).update(msg);
 			}

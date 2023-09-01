@@ -240,7 +240,7 @@ public class Client extends Thread {
 	private void statistics(String cmd) {
 		this.send(cmd + " " + username);
 		String response = this.receive();
-		System.out.println("< ----- STATISTICS -----\n< " + response);
+		System.out.println("< ------------ STATISTICS ------------\n< " + response);
 	}
 
 	private void share(String cmd) {
@@ -255,10 +255,10 @@ public class Client extends Thread {
 			return;
 		}
 
-		System.out.println("< ---- sessions ----");
+		System.out.println("< -------------- SHARE ---------------");
 		for (String s : sessions)
 			System.out.println("< " + s);
-		System.out.println("< ----------------");
+		System.out.println("< ------------------------------------");
 	}
 
 	private void ranking(String cmd) {
@@ -337,7 +337,7 @@ public class Client extends Thread {
 			if (first.equals("help"))
 				this.help(cmd);
 			else if (first.equals("register"))
-				System.out.println(this.register(cmd));
+				System.out.println(register(cmd));
 			else if (first.equals("login"))
 				this.login(cmd);
 			else if (first.equals("logout"))
