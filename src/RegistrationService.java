@@ -37,6 +37,16 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 
 	@Override
 	public synchronized void registerForNotification(Notify notify) throws RemoteException {
+		StringBuilder builder = new StringBuilder();
+		int len;
+		if (ranking.size() >= 3)
+			len = 3;
+		else
+			len = ranking.size();
+
+		for (int i = 0; i < len; i++)
+			builder.append(ranking.get(i).getUsername() + " ");
+		notify.setTopThree(builder.toString());
 		notifiers.add(notify);
 	}
 

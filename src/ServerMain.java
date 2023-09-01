@@ -7,7 +7,7 @@ public class ServerMain {
 			}
 
 			Server server = new Server(args[0]);
-			server.start();
+			server.start(); // thread per la chiusura del server
 			while (server.isRunning() || server.getActiveConnections() > 0)
 				server.multiplex();
 

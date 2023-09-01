@@ -28,18 +28,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server extends Thread {
 
-	// Map of users and the ranking list
+	// tabella hash degli utenti e classifica punteggi
 	private ConcurrentHashMap<String, User> users;
 	private List<User> ranking;
 
-	// Wordle
+	// Wordle e thread estrattore
 	private Wordle wordle;
 	private Thread extractor;
 
 	// JSON
 	private JsonWrapper json_wrapper;
 
-	// CONFIGURATION
+	// variabili di configurazione
 	private String USERS_BACKUP;
 	private String WORDS;
 	private int RMI_PORT;
@@ -48,7 +48,7 @@ public class Server extends Thread {
 	private int MULTICAST_PORT;
 	private long EXTRACTION_TIMEOUT;
 
-	// Server running conditions
+	// condizioni per l'esecuzione
 	private boolean RUNNING;
 	private volatile AtomicInteger ACTIVE_CONNECTIONS;
 
@@ -71,7 +71,7 @@ public class Server extends Thread {
 		try {
 			System.out.println("< -------- WORDLE --------");
 
-			// configuration file parsing
+			// parsing del file di configurazione
 			File config = new File(config_file);
 			if (!config.exists()) {
 				System.out.println("< ERROR: server configuration file not found");

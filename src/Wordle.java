@@ -32,12 +32,6 @@ public class Wordle {
 		random = new Random();
 	}
 
-	/*
-	 * public void getSessions() {
-	 * System.out.println("< " + sessions);
-	 * }
-	 */
-
 	public Session get(String username) {
 		return sessions.get(username);
 	}

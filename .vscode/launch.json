@@ -15,7 +15,6 @@
       "name": "Server",
       "request": "launch",
       "mainClass": "ServerMain",
-      "projectName": "wordle_7cd78a68",
       "args": "server_config.json"
     },
     {
@@ -23,7 +22,6 @@
       "name": "Client",
       "request": "launch",
       "mainClass": "ClientMain",
-      "projectName": "wordle_7cd78a68",
       "args": "client_config.json"
     }
   ]

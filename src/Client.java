@@ -220,7 +220,7 @@ public class Client extends Thread {
 			int count = is.read(buffer);
 			String content = new String(buffer, 0, count);
 			String translation = json_wrapper.getString(content, "translatedText");
-			System.out.println("< translation: " + translation);
+			System.out.println("\n< translation: " + translation);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

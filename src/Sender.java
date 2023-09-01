@@ -62,7 +62,7 @@ public class Sender implements Runnable {
 		}
 	}
 
-	private void updateRanking(String msg) {
+	private void updateRanking() {
 		try {
 			String[] top_three;
 			if (ranking.size() >= 3)
@@ -75,13 +75,16 @@ public class Sender implements Runnable {
 
 			Collections.sort(ranking);
 			String username;
+			String msg = "";
 			for (int i = 0; i < top_three.length; i++) {
 				username = ranking.get(i).getUsername();
-				if (!username.equals(top_three[i])) {
-					for (int j = 0; j < notifiers.size(); j++)
-						notifiers.get(j).update("new top three ranking");
-					return;
-				}
+				if (!username.equals(top_three[i]))
+					msg = msg + username + " ";
+			}
+
+			if (!msg.equals("")) {
+				for (int j = 0; j < notifiers.size(); j++)
+					notifiers.get(j).update(msg);
 			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -121,7 +124,7 @@ public class Sender implements Runnable {
 			String msg = new String(bytes, 0, length);
 			if (!msg.contains("ERROR")) {
 				if (msg.contains("guess right"))
-					this.updateRanking(msg);
+					this.updateRanking();
 				else if (msg.contains("share"))
 					this.share(msg);
 				else if (msg.contains("logout"))

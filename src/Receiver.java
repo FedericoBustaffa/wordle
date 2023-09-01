@@ -136,7 +136,6 @@ public class Receiver implements Runnable {
 				u.resetLastStreak();
 			}
 		}
-		// wordle.getSessions();
 		buffer.put((guess_result).getBytes());
 	}
 
