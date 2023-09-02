@@ -5,6 +5,7 @@ public class ClientMain {
 			System.exit(1);
 		}
 		Client client = new Client(args[0]);
+		client.connect();
 		client.shell();
 		client.shutdown();
 	}

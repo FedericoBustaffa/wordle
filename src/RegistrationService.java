@@ -19,15 +19,18 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 
 	@Override
 	public synchronized String register(String username, String password) throws RemoteException {
+		// controlli correttezza username e password
 		if (username == null || username.equals(""))
 			return "< invalid username";
 		else if (password == null || password.equals(""))
 			return "< invalid password";
 
+		// controlli disponibilità nome utente
 		User user = new User(username, password);
 		if (users.get(username) != null)
 			return "< username \"" + username + "\" not available";
 		else {
+			// registrazione utente
 			users.put(username, user);
 			ranking.add(user);
 			System.out.println("< new user: " + username + " has been registered");
@@ -37,6 +40,7 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 
 	@Override
 	public synchronized void registerForNotification(Notify notify) throws RemoteException {
+		// stringa contenente i primi 3 utenti in classifica
 		StringBuilder builder = new StringBuilder();
 		int len;
 		if (ranking.size() >= 3)
@@ -47,6 +51,8 @@ public class RegistrationService extends UnicastRemoteObject implements Registra
 		for (int i = 0; i < len; i++)
 			builder.append(ranking.get(i).getUsername() + " ");
 		notify.setTopThree(builder.toString());
+
+		// registrazione oggetto di notifica remoto
 		notifiers.add(notify);
 	}
 

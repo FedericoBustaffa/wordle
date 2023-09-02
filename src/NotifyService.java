@@ -31,6 +31,7 @@ public class NotifyService extends UnicastRemoteObject implements Notify {
 		System.out.println("\n< ---------- RANKING UPDATE ----------");
 		for (int i = 0; i < users.length; i++) {
 			if (!this.top_three[i].equals(users[i])) {
+				// confronto tra vecchia top 3 e nuova
 				System.out.printf("< %s now at place %d\n", users[i], (i + 1));
 				this.top_three[i] = users[i];
 			}

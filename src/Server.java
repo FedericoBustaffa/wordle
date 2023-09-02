@@ -152,6 +152,7 @@ public class Server extends Thread {
 		}
 	}
 
+	// thread in attesa di input per spegnere il server
 	@Override
 	public void run() {
 		try {
@@ -159,6 +160,7 @@ public class Server extends Thread {
 			shutdown_button.nextLine();
 			shutdown_button.close();
 
+			// chiusura server TCP
 			server_socket_key.channel().close();
 			RUNNING = false;
 			selector.wakeup();
@@ -167,6 +169,7 @@ public class Server extends Thread {
 		}
 	}
 
+	// accetta nuove connessioni e incrementa il numero di client connessi
 	private void accept(SelectionKey key) {
 		try {
 			synchronized (ACTIVE_CONNECTIONS) {
@@ -185,6 +188,7 @@ public class Server extends Thread {
 		}
 	}
 
+	// gestione delle operazioni sui channel
 	public void multiplex() {
 		try {
 			selector.select();
@@ -196,7 +200,7 @@ public class Server extends Thread {
 				it.remove();
 				if (key.isValid()) {
 					if (key.isAcceptable()) {
-						this.accept(key);
+						accept(key);
 					} else if (key.isWritable()) {
 						key.interestOps(0);
 						pool.execute(new Sender(key));
@@ -223,35 +227,36 @@ public class Server extends Thread {
 		try {
 			System.out.println("< ---------- WORDLE CLOSURE ----------");
 
-			// threads shutdown
+			// attende la terminazione di tutti i task avviati
 			pool.shutdown();
 			while (!pool.awaitTermination(60L, TimeUnit.SECONDS))
 				System.out.println("< waiting for thread closure");
 
-			// JSON backup
+			// effettua il backup degli utenti
 			json_wrapper.writeArray(users);
 			System.out.println("< BACKUP DONE");
 
-			// wordle closure
+			// interruzione thread estrattore di wordle
 			extractor.interrupt();
 			extractor.join();
 			System.out.println("< EXTRACTOR CLOSE");
 
-			// RMI closure
+			// rimozione oggetto RMI remoto
 			registry.unbind(Registration.SERVICE);
 			UnicastRemoteObject.unexportObject(registration, false);
 			System.out.println("< RMI REGISTRATION SERVICE CLOSE");
 
-			// TCP closure
+			// chiusura connessioni TCP
 			for (SelectionKey k : selector.keys()) {
 				k.channel().close();
 			}
 			selector.close();
 			System.out.println("< TCP CLOSE");
 
-			// multicast closure
+			// chiusura connessione multicast
 			multicast.close();
 			System.out.println("< MULTICAST CLOSE");
+
 			System.out.println("< ------------------------------------");
 		} catch (IOException e) {
 			e.printStackTrace();

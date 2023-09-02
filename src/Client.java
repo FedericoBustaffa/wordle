@@ -1,8 +1,7 @@
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.rmi.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -48,8 +47,8 @@ public class Client extends Thread {
 	// TCP
 	private SocketAddress tcp_address;
 	private Socket socket;
-	private InputStream reader;
-	private OutputStream writer;
+	private BufferedInputStream reader;
+	private BufferedOutputStream writer;
 
 	// MULTICAST
 	private MulticastSocket multicast;
@@ -73,6 +72,7 @@ public class Client extends Thread {
 			json_wrapper = new JsonWrapper(config);
 			String conf = json_wrapper.getContent();
 
+			// connection value parsing
 			RMI_ADDRESS = json_wrapper.getString(conf, "rmi_address");
 			RMI_PORT = json_wrapper.getInteger(conf, "rmi_port");
 			TCP_ADDRESS = json_wrapper.getString(conf, "tcp_address");
@@ -100,6 +100,7 @@ public class Client extends Thread {
 
 			// ShutdownHook for SIGINT capture
 			Runtime.getRuntime().addShutdownHook(this);
+
 		} catch (java.rmi.UnknownHostException e) {
 			System.out.println("< server RMI not found");
 			System.exit(1);
@@ -114,8 +115,8 @@ public class Client extends Thread {
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		} catch (NoSuchElementException e) {
-			System.out.println("< invalid client configuration file" +
-					e.getLocalizedMessage() + " field not found");
+			System.out.printf("< invalid client configuration file %s field not found\n",
+					e.getLocalizedMessage());
 			System.exit(1);
 		}
 	}
@@ -126,11 +127,12 @@ public class Client extends Thread {
 		this.exit("exit");
 	}
 
+	// TCP connection to server
 	public void connect() {
 		try {
 			socket.connect(tcp_address);
-			reader = socket.getInputStream();
-			writer = socket.getOutputStream();
+			reader = new BufferedInputStream(socket.getInputStream());
+			writer = new BufferedOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			System.out.println("< CONNECTION ERROR: server not online");
 			System.exit(1);
@@ -157,12 +159,14 @@ public class Client extends Thread {
 		return null;
 	}
 
+	// richiede una stringa contenente tutti i comandi e come usarli
 	private void help(String cmd) {
 		this.send(cmd);
 		String response = this.receive();
 		System.out.println("< " + response);
 	}
 
+	// registrazione nuovo utente tramite RMI
 	public String register(String cmd) {
 		try {
 			String[] parse = cmd.split(" ");
@@ -176,7 +180,9 @@ public class Client extends Thread {
 		return null;
 	}
 
+	// login utente
 	private void login(String cmd) {
+		// se già loggato non si invia la richiesta
 		if (username != null) {
 			System.out.println("< you are already logged in");
 			return;
@@ -187,11 +193,14 @@ public class Client extends Thread {
 			String response = this.receive();
 			System.out.println("< " + response);
 			if (!response.contains("ERROR")) {
+				// assegnazione dello username in caso di successo
 				username = cmd.split(" ")[1];
 
+				// registrazione al servizio di callback
 				notify_service = new NotifyService(username);
 				registration.registerForNotification(notify_service);
 
+				// avvio di un thread in ascolto sul gruppo di multicast
 				multicast.joinGroup(group);
 				mc_receiver = new MulticastReceiver(multicast, sessions, username);
 				mc_receiver.start();
@@ -204,6 +213,7 @@ public class Client extends Thread {
 	}
 
 	private void play(String cmd) {
+		// se possibile da il via ad una nuova sessione di gioco
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
@@ -211,6 +221,7 @@ public class Client extends Thread {
 
 	private void translate(String word) {
 		try {
+			// connessione al servizio di traduzione da inglese a italiano
 			URL url = new URL("https://api.mymemory.translated.net/get?q=" +
 					word + "&langpair=en|it");
 			HttpURLConnection translator = (HttpURLConnection) url.openConnection();
@@ -227,9 +238,12 @@ public class Client extends Thread {
 	}
 
 	private void guess(String cmd) {
+		// invio di una GW
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
+
+		// traduzione in caso di partita terminata
 		if (response.contains("right") || response.contains("attempts terminated for")) {
 			String[] split = response.split(" ");
 			String word = split[split.length - 1];
@@ -238,18 +252,21 @@ public class Client extends Thread {
 	}
 
 	private void statistics(String cmd) {
+		// stringa contenente tutte le statistiche di gioco dell'utente
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< ------------ STATISTICS ------------\n< " + response);
 	}
 
 	private void share(String cmd) {
+		// condivisione sul gruppo di multicast di una partita
 		this.send(cmd + " " + username);
 		String response = this.receive();
 		System.out.println("< " + response);
 	}
 
 	private void show() {
+		// visualizzazione di tutte le notifiche arrivate sul gruppo multicast
 		if (sessions.size() == 0) {
 			System.out.println("< there are no notifications");
 			return;
@@ -262,6 +279,7 @@ public class Client extends Thread {
 	}
 
 	private void ranking(String cmd) {
+		// visualizzazione classifica
 		this.send(cmd);
 		String response = this.receive();
 		System.out.println("< " + response);
@@ -275,14 +293,19 @@ public class Client extends Thread {
 			if (!response.contains("ERROR")) {
 				username = null;
 
+				// rimozione dell'oggetto per le callback
 				registration.unregisterForNotification(notify_service);
 				UnicastRemoteObject.unexportObject(notify_service, false);
 				notify_service = null;
 
+				// chiusura del thread in ascolto sul gruppo di multicast
 				mc_receiver.join();
 				multicast.leaveGroup(group);
+
+				// cancellazione notifiche
 				sessions.clear();
 
+				// traduzione in caso di interruzione di una partita in corso
 				String[] parse = response.split(" ");
 				if (parse.length == 4)
 					translate(parse[3]);
@@ -307,12 +330,17 @@ public class Client extends Thread {
 				done = true;
 				if (username != null) {
 					username = null;
+
+					// rimozione dell'oggetto per le callback
 					registration.unregisterForNotification(notify_service);
 					UnicastRemoteObject.unexportObject(notify_service, false);
+
+					// chiusura del thread in ascolto sul gruppo di multicast
 					mc_receiver.join();
 					multicast.leaveGroup(group);
 				}
 
+				// traduzione in caso di interruzione di una partita in corso
 				String[] parse = response.split(" ");
 				if (parse.length == 4)
 					translate(parse[3]);
@@ -326,8 +354,8 @@ public class Client extends Thread {
 		}
 	}
 
+	// shell interattiva CLI
 	public void shell() {
-		this.connect();
 		String cmd;
 		String first;
 		while (!done) {
@@ -364,13 +392,12 @@ public class Client extends Thread {
 
 	public void shutdown() {
 		try {
-			// Scanner closure
 			input.close();
 
-			// TCP closure
+			// chiusura connessione TCP
 			socket.close();
 
-			// MULTICAST closure
+			// chiusura connessione MULTICAST
 			multicast.close();
 
 		} catch (IOException e) {

@@ -102,6 +102,7 @@ public class User implements Comparable<User>, Serializable {
 	}
 
 	public void updateGuessDistribution(int attempts) {
+		// calcolo del punteggio
 		guessDistribution[attempts - 1]++;
 		int s = 0;
 		int w = 0;

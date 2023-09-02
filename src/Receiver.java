@@ -69,6 +69,7 @@ public class Receiver implements Runnable {
 			return;
 		}
 
+		// controllo password e stato utente
 		if (password.equals(u.getPassword())) {
 			if (u.isOnline()) {
 				buffer.put("ERROR: user already logged in".getBytes());
@@ -99,9 +100,9 @@ public class Receiver implements Runnable {
 			return;
 		}
 
+		// richiesta di iniziare una partita
 		User u = users.get(username);
 		if (wordle.startSession(username)) {
-			// wordle.getSessions();
 			u.incGames();
 			buffer.put("SUCCESS: game started".getBytes());
 		} else
@@ -121,6 +122,7 @@ public class Receiver implements Runnable {
 		}
 
 		String word = cmd[1];
+		// messaggio di ritorno per la GW inviata
 		String guess_result = wordle.guess(username, word);
 		Session s = wordle.get(username);
 		if (s != null) {
@@ -171,9 +173,11 @@ public class Receiver implements Runnable {
 		if (s == null) {
 			buffer.put("ERROR: you have to play at least one game".getBytes());
 		} else {
-			if (!s.isClose())
+			if (!s.isClose()) {
+				// in caso ci sia una partita in corso non sarà possibile condividere il
+				// punteggio dell'ultima partita terminata
 				buffer.put("ERROR: you have to finish the current game".getBytes());
-			else
+			} else
 				buffer.put(("SUCCESS: share " + username + ", " + s).getBytes());
 		}
 	}
@@ -188,10 +192,15 @@ public class Receiver implements Runnable {
 			buffer.put("empty ranking list".getBytes());
 			return;
 		}
+
+		// costruzione stringa classifica
+		int i = 1;
 		StringBuilder builder = new StringBuilder();
 		builder.append("----------- RANKING LIST -----------\n");
-		for (User u : ranking)
-			builder.append("< " + u + "\n");
+		for (User u : ranking) {
+			builder.append("< " + i + ". " + u + "\n");
+			i++;
+		}
 		builder.append("< ------------------------------------");
 
 		buffer.put(builder.toString().getBytes());
@@ -215,11 +224,14 @@ public class Receiver implements Runnable {
 			return;
 		}
 
+		// controllo stato utente
 		if (!u.isOnline()) {
 			buffer.put("ERROR: not logged yet".getBytes());
 		} else {
 			u.offline();
 			System.out.println("< " + username + " left");
+
+			// chiusura sessione di gioco aperta (se presente)
 			Session session = wordle.get(username);
 			if (session != null && !session.isClose()) {
 				session.lose();

@@ -43,10 +43,17 @@ public class Wordle implements Runnable {
 		System.out.println("< extracted word: " + current_word);
 	}
 
+	/**
+	 * inizia una sessione di gioco se non esiste per quell'utente o se questo ha
+	 * concluso l'ultima e una nuova parola è stata estratta
+	 * 
+	 * @param username
+	 * @return true se la sessione è stata inizializzata correttamente o false se
+	 *         non è stato possibile iniziare una nuova sessione
+	 */
 	public boolean startSession(String username) {
 		Session session = sessions.get(username);
 		if (session == null) {
-
 			sessions.put(username, new Session(current_word));
 			return true;
 		} else if (session.isClose()) {
@@ -59,6 +66,11 @@ public class Wordle implements Runnable {
 			return false;
 	}
 
+	/**
+	 * chiude una sessione aperta se presente
+	 * 
+	 * @param username
+	 */
 	public void closeSession(String username) {
 		Session session = sessions.get(username);
 		if (session == null)
@@ -67,6 +79,12 @@ public class Wordle implements Runnable {
 			session.close();
 	}
 
+	/**
+	 * @param word
+	 * @param session_word
+	 * @return suggerimento ottenuto confrontando la parola proposta con la parola
+	 *         che l'utente sta cercando di indovinare
+	 */
 	private String hints(String word, String session_word) {
 		StringBuilder builder = new StringBuilder("WORD: " + word);
 		builder.append("\n< HINT: ");
@@ -111,6 +129,7 @@ public class Wordle implements Runnable {
 		}
 	}
 
+	// codice eseguito dal thread estrattore
 	@Override
 	public void run() {
 		try {

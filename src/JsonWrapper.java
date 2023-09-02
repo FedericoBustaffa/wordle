@@ -32,6 +32,7 @@ public class JsonWrapper {
         this(null);
     }
 
+    // scrive la lista utenti sul file di backup
     public void writeArray(ConcurrentHashMap<String, User> users) {
         try {
             generator = factory.createGenerator(file, JsonEncoding.UTF8);
@@ -48,6 +49,7 @@ public class JsonWrapper {
         }
     }
 
+    // legge la lista utenti dal file di backup
     public ConcurrentHashMap<String, User> readArray() {
         try {
             ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String, User>();
@@ -64,7 +66,6 @@ public class JsonWrapper {
                 user = parser.readValueAs(User.class);
                 users.put(user.getUsername(), user);
             }
-
             parser.close();
 
             return users;
@@ -75,6 +76,7 @@ public class JsonWrapper {
         return null;
     }
 
+    // legge il contenuto di un file JSON e lo converte in stringa
     public String getContent() {
         try {
             if (file == null)
@@ -90,6 +92,15 @@ public class JsonWrapper {
         return null;
     }
 
+    /**
+     * Legge la stringa <content> (file json in forma di stringa) e ne estrae il
+     * valore relativo al campo <field>
+     * 
+     * @param content
+     * @param field
+     * @return il valore di tipo stringa corrispondente al campo <field> se presente
+     * @throws NoSuchElementException se il campo non <field> non è presente
+     */
     public String getString(String content, String field) throws NoSuchElementException {
         try {
             JsonNode node = mapper.readTree(content);
@@ -106,6 +117,12 @@ public class JsonWrapper {
         throw new NoSuchElementException(field);
     }
 
+    /**
+     * @param content
+     * @param field
+     * @return il valore di tipo intero corrispondente al campo <field> se presente.
+     * @throws NoSuchElementException se il campo non <field> non è presente
+     */
     public int getInteger(String content, String field) throws NoSuchElementException {
         try {
             JsonNode node = mapper.readTree(content);
@@ -122,6 +139,12 @@ public class JsonWrapper {
         throw new NoSuchElementException(field);
     }
 
+    /**
+     * @param content
+     * @param field
+     * @return il valore di tipo long corrispondente al campo <field> se presente.
+     * @throws NoSuchElementException se il campo non <field> non è presente
+     */
     public long getLong(String content, String field) throws NoSuchElementException {
         try {
             JsonNode node = mapper.readTree(content);

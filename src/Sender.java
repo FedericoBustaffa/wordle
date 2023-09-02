@@ -62,6 +62,8 @@ public class Sender implements Runnable {
 		}
 	}
 
+	// aggiorna la classifica e nel caso ci siano variazioni nei primi 3 posti invia
+	// una notifica agli utenti online
 	private void updateRanking() {
 		try {
 			String[] top_three;
@@ -93,6 +95,8 @@ public class Sender implements Runnable {
 		}
 	}
 
+	// invia un messaggio di logout al thread del client in ascolto sul
+	// gruppo multicast
 	private void logout(String msg) {
 		try {
 			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
@@ -102,6 +106,8 @@ public class Sender implements Runnable {
 		}
 	}
 
+	// invia un messaggio di logout al thread del client in ascolto sul
+	// gruppo multicast e decrementa il numero di connessioni attive
 	private void exit(String msg) {
 		try {
 			DatagramPacket packet = new DatagramPacket(msg.getBytes(), 0, msg.length(), group);
